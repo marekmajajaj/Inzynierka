@@ -2510,7 +2510,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 38.1 0)
 			(effects
 				(font
@@ -2991,7 +2991,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 52.07 0)
 			(effects
 				(font
@@ -3338,7 +3338,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 66.04 0)
 			(effects
 				(font
@@ -3417,7 +3417,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 66.04 0)
 			(effects
 				(font
@@ -3630,7 +3630,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 24.13 0)
 			(effects
 				(font
@@ -3776,7 +3776,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 80.01 0)
 			(effects
 				(font
@@ -3989,7 +3989,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 107.95 0)
 			(effects
 				(font
@@ -4336,7 +4336,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 93.98 0)
 			(effects
 				(font
@@ -4415,7 +4415,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 80.01 0)
 			(effects
 				(font
@@ -4628,7 +4628,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_2x10_P2.54mm_Vertical"
 			(at 250.19 127 0)
 			(effects
 				(font
@@ -5029,7 +5029,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 24.13 0)
 			(effects
 				(font
@@ -5376,7 +5376,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 52.07 0)
 			(effects
 				(font
@@ -5924,7 +5924,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 38.1 0)
 			(effects
 				(font
@@ -6137,7 +6137,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 93.98 0)
 			(effects
 				(font
@@ -6752,7 +6752,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 107.95 0)
 			(effects
 				(font
@@ -6898,7 +6898,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 102.87 121.92 0)
 			(effects
 				(font
@@ -7044,7 +7044,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "_moje:INMP441 breakout"
 			(at 139.7 121.92 0)
 			(effects
 				(font
