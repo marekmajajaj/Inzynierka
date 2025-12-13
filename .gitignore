@@ -1,0 +1,39 @@
+# Archived Backups (KiCad 6.0)
+/kicad/inzynierka/inzynierka-backups
+
+
+# Temporary files
+/kicad/inzynierka/*.000
+/kicad/inzynierka/*.bak
+/kicad/inzynierka/*.bck
+/kicad/inzynierka/*.kicad_pcb-bak
+/kicad/inzynierka/*.kicad_sch-bak
+/kicad/inzynierka/*-backups
+/kicad/inzynierka/*-cache*
+/kicad/inzynierka/*-bak
+/kicad/inzynierka/*-bak*
+/kicad/inzynierka/*~
+/kicad/inzynierka/~*
+/kicad/inzynierka/_autosave-*
+/kicad/inzynierka/\#auto_saved_files\#
+/kicad/inzynierka/*.tmp
+/kicad/inzynierka/*-save.pro
+/kicad/inzynierka/*-save.kicad_pcb
+/kicad/inzynierka/fp-info-cache
+/kicad/inzynierka/~*.lck
+/kicad/inzynierka/\#auto_saved_files#
+
+
+# Netlist files (exported from Eeschema)
+/kicad/inzynierka/*.net
+
+# Autorouter files (exported from Pcbnew)
+/kicad/inzynierka/*.dsn
+/kicad/inzynierka/*.ses
+
+# Exported BOM files
+/kicad/inzynierka/*.xml
+/kicad/inzynierka/*.csv
+
+# Local project settings
+/kicad/inzynierka/*.kicad_prl
