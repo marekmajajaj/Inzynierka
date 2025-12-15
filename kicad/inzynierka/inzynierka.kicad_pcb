@@ -1,7 +1,7 @@
 (kicad_pcb
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(general
 		(thickness 1.6)
 		(legacy_teardrops no)
@@ -9,42 +9,43 @@
 	(paper "A4")
 	(layers
 		(0 "F.Cu" signal)
-		(31 "B.Cu" signal)
-		(32 "B.Adhes" user "B.Adhesive")
-		(33 "F.Adhes" user "F.Adhesive")
-		(34 "B.Paste" user)
-		(35 "F.Paste" user)
-		(36 "B.SilkS" user "B.Silkscreen")
-		(37 "F.SilkS" user "F.Silkscreen")
-		(38 "B.Mask" user)
-		(39 "F.Mask" user)
-		(40 "Dwgs.User" user "User.Drawings")
-		(41 "Cmts.User" user "User.Comments")
-		(42 "Eco1.User" user "User.Eco1")
-		(43 "Eco2.User" user "User.Eco2")
-		(44 "Edge.Cuts" user)
-		(45 "Margin" user)
-		(46 "B.CrtYd" user "B.Courtyard")
-		(47 "F.CrtYd" user "F.Courtyard")
-		(48 "B.Fab" user)
-		(49 "F.Fab" user)
-		(50 "User.1" user)
-		(51 "User.2" user)
-		(52 "User.3" user)
-		(53 "User.4" user)
-		(54 "User.5" user)
-		(55 "User.6" user)
-		(56 "User.7" user)
-		(57 "User.8" user)
-		(58 "User.9" user)
+		(2 "B.Cu" signal)
+		(9 "F.Adhes" user "F.Adhesive")
+		(11 "B.Adhes" user "B.Adhesive")
+		(13 "F.Paste" user)
+		(15 "B.Paste" user)
+		(5 "F.SilkS" user "F.Silkscreen")
+		(7 "B.SilkS" user "B.Silkscreen")
+		(1 "F.Mask" user)
+		(3 "B.Mask" user)
+		(17 "Dwgs.User" user "User.Drawings")
+		(19 "Cmts.User" user "User.Comments")
+		(21 "Eco1.User" user "User.Eco1")
+		(23 "Eco2.User" user "User.Eco2")
+		(25 "Edge.Cuts" user)
+		(27 "Margin" user)
+		(31 "F.CrtYd" user "F.Courtyard")
+		(29 "B.CrtYd" user "B.Courtyard")
+		(35 "F.Fab" user)
+		(33 "B.Fab" user)
+		(39 "User.1" user)
+		(41 "User.2" user)
+		(43 "User.3" user)
+		(45 "User.4" user)
+		(47 "User.5" user)
+		(49 "User.6" user)
+		(51 "User.7" user)
+		(53 "User.8" user)
+		(55 "User.9" user)
 	)
 	(setup
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
+		(tenting front back)
 		(grid_origin 101.5 100)
 		(pcbplotparams
-			(layerselection 0x00010fc_ffffffff)
-			(plot_on_all_layers_selection 0x0000000_00000000)
+			(layerselection 0x00000000_00000000_55555555_5755f5ff)
+			(plot_on_all_layers_selection 0x00000000_00000000_00000000_00000000)
 			(disableapertmacros no)
 			(usegerberextensions no)
 			(usegerberattributes yes)
@@ -54,7 +55,6 @@
 			(dashed_line_gap_ratio 3.000000)
 			(svgprecision 4)
 			(plotframeref no)
-			(viasonmask no)
 			(mode 1)
 			(useauxorigin no)
 			(hpglpennumber 1)
@@ -62,16 +62,19 @@
 			(hpglpendiameter 15.000000)
 			(pdf_front_fp_property_popups yes)
 			(pdf_back_fp_property_popups yes)
+			(pdf_metadata yes)
+			(pdf_single_document no)
 			(dxfpolygonmode yes)
 			(dxfimperialunits yes)
 			(dxfusepcbnewfont yes)
 			(psnegative no)
 			(psa4output no)
-			(plotreference yes)
-			(plotvalue yes)
-			(plotfptext yes)
-			(plotinvisibletext no)
+			(plot_black_and_white yes)
 			(sketchpadsonfab no)
+			(plotpadnumbers no)
+			(hidednponfab no)
+			(sketchdnponfab yes)
+			(crossoutdnponfab yes)
 			(subtractmaskfromsilk no)
 			(outputformat 1)
 			(mirror no)
@@ -122,19 +125,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "9b683349-c0a4-4948-a3f4-28db00c0ca4e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1737076b-c8c8-45d6-baf8-a629cb43a80a")
 			(effects
 				(font
 					(size 1 1)
@@ -325,7 +315,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "a9419470-0a7b-4c73-91fb-558f5ff8f091")
 		)
@@ -336,7 +326,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "d337fdd0-cbe9-4683-bfc3-972898fac85b")
 		)
@@ -429,6 +419,7 @@
 				"ee0e7748-a4a0-45b4-81a8-998a9f75074d" "fc6a4838-1234-43fd-8f16-6b5222a36d09"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -451,19 +442,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "ce45bbe8-3c38-4797-ad32-1ade49383ac8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "16e09866-b23d-4bfe-8b93-e426d2b575ae")
 			(effects
 				(font
 					(size 1 1)
@@ -654,7 +632,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "d4409cf6-75f2-4da4-aa77-6937f211d709")
 		)
@@ -665,7 +643,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "dde2a97e-fa13-43c6-8308-984a8a354964")
 		)
@@ -758,6 +736,7 @@
 				"a9155f71-bb80-4852-af14-be02b8848b69" "e6716ce9-2f40-454f-ba66-f32c428ebc8e"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -780,19 +759,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "b7f7c714-3707-458e-a5a2-dfb1c40e31fc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "75f18510-eaff-4f85-8b02-acc6fea4579f")
 			(effects
 				(font
 					(size 1 1)
@@ -983,7 +949,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "5ec09e85-89ab-4762-afd0-280e8013dbc7")
 		)
@@ -994,7 +960,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "4e13c059-71d2-46c2-b6fb-b580cb98019f")
 		)
@@ -1087,6 +1053,7 @@
 				"c8f8e718-d193-4825-9549-286ba08ce166" "da1517a0-8d1f-4d1f-96c4-6eb3ed3a0ab3"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -1109,19 +1076,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "1d8c042c-74f0-4592-baea-bad3b3af0b78")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "881076c7-010b-4bc0-b6e9-c40785cd1297")
 			(effects
 				(font
 					(size 1 1)
@@ -1312,7 +1266,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "0b6aa5bf-f5d6-459f-b19f-5ddc03f2a940")
 		)
@@ -1323,7 +1277,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "ca027b13-fba2-4792-80d6-3f5bc273d5fc")
 		)
@@ -1416,6 +1370,7 @@
 				"c2a651aa-f4fa-4927-a045-ad8f9d669550" "f7a0b81e-a771-42f9-bcf2-762f3fec192b"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -1438,19 +1393,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "edcdcf03-d245-459c-a85d-12fd09fda499")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "55a1ada6-c859-4712-b0cf-dd620d2fcd66")
 			(effects
 				(font
 					(size 1 1)
@@ -1641,7 +1583,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "e3c5092b-fde9-44c6-b47a-09efe2e45f92")
 		)
@@ -1652,7 +1594,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "0240372e-6de1-437a-a662-00d50ba3fe2f")
 		)
@@ -1745,6 +1687,7 @@
 				"c1c76f20-016d-453c-a9aa-c769d910978b" "e0866e5a-e82c-46c2-b98f-94afd4f0f8c2"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -1767,19 +1710,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "b42a156c-917c-4982-99c1-704226a4388c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a0e71a3f-8fe1-4f50-883a-8918bea0d93e")
 			(effects
 				(font
 					(size 1 1)
@@ -1970,7 +1900,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "76078d5d-fd0f-4263-a006-23bdb0289609")
 		)
@@ -1981,7 +1911,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "9216ac0f-7e5e-41ed-bf00-453833f5b378")
 		)
@@ -2074,6 +2004,7 @@
 				"deb2f68e-905f-449a-a290-0ad0805970ba" "ed2f8be2-39b3-45b3-b599-1b23a7fb0c11"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -2096,19 +2027,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "7a0db043-7062-4796-9519-bacbb97c4cb1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b8496c4b-b100-4287-85c8-891cea6df400")
 			(effects
 				(font
 					(size 1 1)
@@ -2299,7 +2217,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "d79814f4-69b9-4afd-8bdd-2a73324582fc")
 		)
@@ -2310,7 +2228,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "aa9b8c37-de7d-4e29-8082-57ae502cb630")
 		)
@@ -2403,6 +2321,7 @@
 				"edf94d0f-59ee-4578-8e5b-1f9aa0cc3280" "fed01d3a-a71e-4321-8c73-9d560fa65810"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -2425,19 +2344,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "ee2e7c84-89a9-4d56-8572-5a2c40dab710")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "41271537-8485-4446-a418-4cb75499dd72")
 			(effects
 				(font
 					(size 1 1)
@@ -2628,7 +2534,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "0a543eb5-25ba-43c9-ab21-43066379ac73")
 		)
@@ -2639,7 +2545,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "2c58e74d-22a0-4b1c-8cbd-6852e29d04a3")
 		)
@@ -2732,6 +2638,7 @@
 				"e1ec546e-6655-4bcd-bb2a-aa0987bcda10" "e6bb4f4d-ba57-4138-906a-dfaac0687cb4"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -2754,19 +2661,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "5e7264bf-544e-467d-90b7-6f18263cf42a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "66abdd15-ed24-4037-b0c8-44323b1af584")
 			(effects
 				(font
 					(size 1 1)
@@ -2957,7 +2851,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "d01ca4e8-e419-437b-a26d-435450948a34")
 		)
@@ -2968,7 +2862,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "f4b2730e-2f44-4ec5-a3d2-ad9e0d418e8d")
 		)
@@ -3061,6 +2955,7 @@
 				"f17ba1f3-7cfe-43e9-a867-fd8f8f9ede41" "f42cdd41-7dac-4c52-babc-2c0d8dc171e2"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -3083,19 +2978,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "97a691f0-72c6-4ce3-9f4c-706d8560b0dd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a7e73db8-0f7a-4040-a168-2fc9f8369b0b")
 			(effects
 				(font
 					(size 1 1)
@@ -3286,7 +3168,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "f646c158-b9f7-4524-94b9-34411d1367d1")
 		)
@@ -3297,7 +3179,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "75ca3bfc-1c3d-4537-ac40-5f803d3478a0")
 		)
@@ -3390,6 +3272,7 @@
 				"faf5eddc-2f2e-4373-b9f5-0c4774eb9715" "fef7964d-bad5-434c-918b-9105eca9a623"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -3412,19 +3295,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "6aa06960-9ece-48ac-9c57-a0c00e4bfa20")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5df2f699-e036-463c-8e08-aade92e57562")
 			(effects
 				(font
 					(size 1 1)
@@ -3615,7 +3485,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "175326ef-2f6c-408b-b3ea-4be294d20313")
 		)
@@ -3626,7 +3496,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "65b76715-0fdb-4660-bf73-f65c107c104d")
 		)
@@ -3719,6 +3589,7 @@
 				"e97e07b8-ed45-4801-bf38-a9d027739bd6" "ea1f5e3e-5200-40fb-801a-252ce734f6d2"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -3741,19 +3612,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "d06e201f-691a-428e-8472-6d77ce621ffe")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2364e2c4-98fa-41e0-b569-b5a54c99cffc")
 			(effects
 				(font
 					(size 1 1)
@@ -3944,7 +3802,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "5bfa8179-6922-45c9-9f18-09f5967039c4")
 		)
@@ -3955,7 +3813,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "c6a8c523-dfdb-4de6-9ba7-48019fe69935")
 		)
@@ -4048,6 +3906,7 @@
 				"cb9a6cfe-a47a-49a2-b913-e7fce79d6a4f" "e306623f-e8df-4085-97f3-5462a93aa03f"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -4070,19 +3929,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "f4d59959-75d7-4549-bca6-30ad18b2062e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "211cc477-fda3-41f7-9544-bef474247d2e")
 			(effects
 				(font
 					(size 1 1)
@@ -4273,7 +4119,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "483bec1a-9a1e-462a-8ad9-57b4f0cbd9dc")
 		)
@@ -4284,7 +4130,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "2caf1029-ec4f-46cb-a0f6-3a3f651eccbe")
 		)
@@ -4377,6 +4223,7 @@
 				"f188161f-421f-4da0-965c-995355861d23" "f1940d9e-a9ed-43ca-ab4c-74e7bec4e46e"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -4399,19 +4246,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "f1a4bb09-5cdd-413b-b54c-4c95cbdd12a1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "edfe903b-323c-4091-b17f-a86efc92d91c")
 			(effects
 				(font
 					(size 1 1)
@@ -4602,7 +4436,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "06cbde67-662e-4a21-971f-6f5fdd5f63db")
 		)
@@ -4613,7 +4447,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "4c9bdf6b-b084-4e19-bc39-97ed00ba9091")
 		)
@@ -4706,6 +4540,7 @@
 				"e141be78-db95-4600-93cf-bc86ed101531" "e780b04e-da47-45a6-8303-8077b1edf4a9"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -4728,19 +4563,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "efa5cf0b-d161-4256-a8c9-537db21041e9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "f8aec9f0-1ec8-4cb0-bc1b-829ecdf84a05")
 			(effects
 				(font
 					(size 1 1)
@@ -4931,7 +4753,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "8177a30c-26eb-4037-84bd-94a4a54d286b")
 		)
@@ -4942,7 +4764,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "bd6874a0-4b17-4dcf-9062-2955cbdd7094")
 		)
@@ -5035,6 +4857,7 @@
 				"e5cc9d4f-6e00-4d63-871f-5558bc2c678e" "e61f70a0-5e79-4a1f-89ff-207db95d92b4"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:Raspberry Pi Camera V2"
 		(layer "F.Cu")
@@ -5057,19 +4880,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "fa8c6c9b-3864-497b-b700-82ede6ac1cc9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:Raspberry Pi Camera V2"
-			(at -12.5 -14.4 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "06fb4b95-c9c8-454a-a729-ffd4aab7c2a1")
 			(effects
 				(font
 					(size 1 1)
@@ -5362,7 +5172,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "B.CrtYd")
 			(uuid "97ff926f-6d85-4f66-b0c5-1504b270c3b3")
 		)
@@ -5375,7 +5185,7 @@
 				(width 0.05)
 				(type solid)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "5ca32165-26fd-4b6f-889d-dff8ad75cd39")
 		)
@@ -5395,7 +5205,7 @@
 			(at -10.5 -12.4)
 			(size 2 2)
 			(drill 2.4)
-			(layers "F&B.Cu" "*.Mask")
+			(layers "*.Cu" "*.Mask")
 			(clearance 2)
 			(uuid "53c265c1-daaa-45ad-b023-e414b903ffe4")
 		)
@@ -5403,7 +5213,7 @@
 			(at -10.5 0.1)
 			(size 2 2)
 			(drill 2.4)
-			(layers "F&B.Cu" "*.Mask")
+			(layers "*.Cu" "*.Mask")
 			(clearance 2)
 			(uuid "2054eb48-cf88-4469-9000-c6c8065bd4fd")
 		)
@@ -5411,7 +5221,7 @@
 			(at 10.5 -12.4)
 			(size 2 2)
 			(drill 2.4)
-			(layers "F&B.Cu" "*.Mask")
+			(layers "*.Cu" "*.Mask")
 			(clearance 2)
 			(uuid "8448e929-1193-4ad6-b24c-641b98e27b33")
 		)
@@ -5419,14 +5229,14 @@
 			(at 10.5 0.1)
 			(size 2 2)
 			(drill 2.4)
-			(layers "F&B.Cu" "*.Mask")
+			(layers "*.Cu" "*.Mask")
 			(clearance 2)
 			(uuid "8bb14542-151a-4777-b903-629c7e0db8ac")
 		)
 		(zone
 			(net 0)
 			(net_name "")
-			(layers "F&B.Cu" "B.CrtYd")
+			(layers "F.Cu" "B.Cu" "B.CrtYd")
 			(uuid "c23d6346-b046-4020-b250-22774fac92ed")
 			(hatch edge 0.5)
 			(connect_pads
@@ -5441,6 +5251,10 @@
 				(copperpour not_allowed)
 				(footprints allowed)
 			)
+			(placement
+				(enabled no)
+				(sheetname "")
+			)
 			(fill
 				(thermal_gap 0.5)
 				(thermal_bridge_width 0.5)
@@ -5451,6 +5265,7 @@
 				)
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "_moje:INMP441 breakout"
 		(layer "F.Cu")
@@ -5473,19 +5288,6 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "e2dd5f34-51b0-49b5-94dc-b02183e8f92a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" "_moje:INMP441 breakout"
-			(at 0 9.5 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "8033eb4f-7ead-4fcd-8af0-3ea0da6d9b64")
 			(effects
 				(font
 					(size 1 1)
@@ -5676,7 +5478,7 @@
 				(width 0.1)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.SilkS")
 			(uuid "4b3264fe-1c76-471a-abe0-7a5f0126afc0")
 		)
@@ -5687,7 +5489,7 @@
 				(width 0.05)
 				(type default)
 			)
-			(fill none)
+			(fill no)
 			(layer "F.CrtYd")
 			(uuid "8acb3393-a28f-4d35-b289-8eff091ccbde")
 		)
@@ -5780,6 +5582,7 @@
 				"ca1284da-494f-4bbd-876f-10432fd7e9dd" "f3d892e7-26b8-44eb-ab31-ae308045ce1d"
 			)
 		)
+		(embedded_fonts no)
 	)
 	(footprint "Connector_PinSocket_2.54mm:PinSocket_2x10_P2.54mm_Vertical"
 		(layer "B.Cu")
@@ -5806,20 +5609,6 @@
 			(effects
 				(font
 					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_2x10_P2.54mm_Vertical"
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "6240b3b0-5779-4fc0-af6d-571802399750")
-			(effects
-				(font
-					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 				(justify mirror)
@@ -6259,6 +6048,7 @@
 			(pintype "input")
 			(uuid "7abaee62-7917-476e-8c07-7eb38f8eb802")
 		)
+		(embedded_fonts no)
 		(model "${KICAD8_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_2x10_P2.54mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
@@ -6278,7 +6068,7 @@
 			(width 0.05)
 			(type default)
 		)
-		(fill none)
+		(fill no)
 		(layer "Edge.Cuts")
 		(uuid "b60239be-2266-46ab-88c8-c157966f2da3")
 	)
@@ -7770,4 +7560,5 @@
 			)
 		)
 	)
+	(embedded_fonts no)
 )
