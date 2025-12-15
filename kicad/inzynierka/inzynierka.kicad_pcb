@@ -11515,7 +11515,7 @@
 		(property "Reference" "RPI-IN1"
 			(at 1.27 -30.48 90)
 			(layer "B.SilkS")
-			(uuid "2f073a45-6289-41e2-bbd1-eefb22866e5b")
+			(uuid "7cb89930-9653-4217-807f-fbaa90fbd37a")
 			(effects
 				(font
 					(size 1 1)
@@ -11527,7 +11527,7 @@
 		(property "Value" "~"
 			(at 1.27 -30.32 90)
 			(layer "B.Fab")
-			(uuid "47251665-d05f-4ff6-a264-4e44e5769247")
+			(uuid "6f892c06-598d-459f-971b-1f61a7cf5af3")
 			(effects
 				(font
 					(size 1 1)
@@ -11540,7 +11540,7 @@
 			(at 0 0 90)
 			(layer "B.Fab")
 			(hide yes)
-			(uuid "0bd18a04-1134-4843-ad15-8cc44cd2343b")
+			(uuid "90ebc2e8-90c2-4e58-8dd5-4fad3d03bc3a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11553,7 +11553,7 @@
 			(at 0 0 90)
 			(layer "B.Fab")
 			(hide yes)
-			(uuid "120342f8-bb41-427f-987b-fd227acaa700")
+			(uuid "b03d7108-2397-4f13-bb05-6a433b48c91c")
 			(effects
 				(font
 					(size 1.27 1.27)
