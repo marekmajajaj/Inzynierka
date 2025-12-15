@@ -6,7 +6,7 @@
 	(property "Reference" "REF**"
 		(at 0 8 0)
 		(unlocked yes)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(uuid "cc399e53-d32c-4a09-89c3-442f6cd862b2")
 		(effects
 			(font

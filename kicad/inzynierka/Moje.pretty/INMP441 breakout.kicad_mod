@@ -4,7 +4,7 @@
 	(generator_version "9.0")
 	(layer "F.Cu")
 	(property "Reference" "MICA6"
-		(at 0 5 0)
+		(at 0 -5.715 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "918145dd-a45a-4eb2-99b4-fe856e835474")
