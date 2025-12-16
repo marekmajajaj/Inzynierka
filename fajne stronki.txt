@@ -44,3 +44,5 @@ https://www.researchgate.net/publication/23590312_Nearfield_acoustic_holography_
 NAH wymaga za dużo głośników
 
 https://www.researchgate.net/publication/12488507_On_reconstruction_of_acoustic_pressure_fields_using_the_Helmholtz_equation_least_squares_method
+
+https://www.protoexpress.com/blog/best-layout-tips-for-high-speed-and-high-current-pcb-traces/
