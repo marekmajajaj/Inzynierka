@@ -3,7 +3,7 @@
 	(generator "pcbnew")
 	(generator_version "9.0")
 	(general
-		(thickness 1.6)
+		(thickness 1)
 		(legacy_teardrops no)
 	)
 	(paper "A4")
@@ -56,7 +56,7 @@
 			)
 			(layer "dielectric 1"
 				(type "core")
-				(thickness 1.51)
+				(thickness 0.91)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)
@@ -3466,7 +3466,7 @@
 			(uuid "29a40d28-0ee8-4ff5-bfdb-3bf4a693359b")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1)
@@ -6334,7 +6334,7 @@
 			(uuid "f87838b8-6892-4683-a5eb-eeb1c0e21be1")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1)
@@ -7251,6 +7251,7 @@
 			(at 0 10.5 36)
 			(unlocked yes)
 			(layer "F.Fab")
+			(hide yes)
 			(uuid "63e86636-9f71-4cf9-b59e-c4dd7756c363")
 			(effects
 				(font
@@ -7461,18 +7462,6 @@
 			(fill no)
 			(layer "F.CrtYd")
 			(uuid "607fdb94-fb39-4238-808f-e3900d500f97")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 12 36)
-			(unlocked yes)
-			(layer "F.Fab")
-			(uuid "fb49ed50-8218-46cb-aebb-7d0eee444f67")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
 		)
 		(pad "1" thru_hole rect
 			(at -3.81 -2.54 36)
@@ -9816,7 +9805,7 @@
 			(unlocked yes)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "d2cf870e-c906-4894-ab72-19a12ff1c2d1")
+			(uuid "4cc93a41-7de1-42ec-b8e1-9ebe93338988")
 			(effects
 				(font
 					(size 1 1)
@@ -9829,7 +9818,7 @@
 			(at 0.005 7.695 90)
 			(unlocked yes)
 			(layer "B.SilkS")
-			(uuid "8f29a434-986c-4134-9304-d7e5d8e3a235")
+			(uuid "ed7cea41-d05d-4f0d-8a06-2e3863e75ded")
 			(effects
 				(font
 					(size 1 1)
@@ -9843,7 +9832,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "fa794fc7-14cf-47b9-af15-1f16d2f3688f")
+			(uuid "07477868-3852-4dfc-979c-04abd2124f13")
 			(effects
 				(font
 					(size 1 1)
@@ -9856,7 +9845,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "d27e012d-7ed1-41bd-98b8-0b7175c1a743")
+			(uuid "b6797d69-93f3-4bd8-b4c6-f78a0810f141")
 			(effects
 				(font
 					(size 1 1)
@@ -10212,7 +10201,7 @@
 			)
 			(polygon
 				(pts
-					(xy 86.1 113.5) (xy 86.1 86.5) (xy 111.962 86.5) (xy 111.962 113.5)
+					(xy 87 112.6) (xy 87 87.4) (xy 111.062 87.4) (xy 111.062 112.6)
 				)
 			)
 		)
@@ -10659,7 +10648,7 @@
 			(uuid "dc3bfa7e-be2d-459a-9cf1-7673b37d5e00")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1)
