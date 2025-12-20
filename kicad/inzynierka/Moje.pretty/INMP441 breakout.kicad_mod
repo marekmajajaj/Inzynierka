@@ -4,14 +4,14 @@
 	(generator_version "9.0")
 	(layer "F.Cu")
 	(property "Reference" "MICA6"
-		(at 0 -5.715 0)
+		(at 0 -7.8 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "918145dd-a45a-4eb2-99b4-fe856e835474")
 		(effects
 			(font
-				(size 1 1)
-				(thickness 0.1)
+				(size 1.016 1.016)
+				(thickness 0.1524)
 			)
 		)
 	)
@@ -58,8 +58,8 @@
 		(start -0.75 -3.289341)
 		(end -0.25 -3.289341)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "b25a5685-9e43-4cf6-b858-5052062f37f4")
@@ -68,8 +68,8 @@
 		(start -0.75 -2.989341)
 		(end -0.25 -2.989341)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "6cd74b46-570e-4fba-9d5f-7c3cbfcb08ae")
@@ -78,8 +78,8 @@
 		(start -0.75 -2.75)
 		(end -0.75 -3.5)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "6624efd9-3c6c-45ac-9995-9360160b8115")
@@ -88,8 +88,8 @@
 		(start -0.75 -0.75)
 		(end 0.75 -0.75)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.2032)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "9ea180c6-4938-4ff1-96b1-b8d748e19d81")
@@ -98,8 +98,8 @@
 		(start -0.7 -2.689341)
 		(end -0.25 -2.689341)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "9b4a7c5d-b29c-4a6f-9c0d-128982d15733")
@@ -108,8 +108,8 @@
 		(start -0.25 -3.589341)
 		(end -0.7 -3.589341)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "11acadff-9f15-470d-86bc-84d0baf89068")
@@ -118,8 +118,8 @@
 		(start 0 -1.68934)
 		(end 0 -0.75)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.2032)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "ee23f996-0195-4824-a4ba-3278d3c91027")
@@ -128,8 +128,8 @@
 		(start 0.75 -3.5)
 		(end 0.75 -2.75)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "dc9aaf5b-4ee8-4e74-b33f-09744b5c48df")
@@ -139,8 +139,8 @@
 		(mid -0.53033 -4.03033)
 		(end 0 -4.25)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "0a05a7b6-d426-4acb-9c32-da39534c1035")
@@ -150,8 +150,8 @@
 		(mid 0.53033 -4.03033)
 		(end 0.75 -3.5)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "f542c368-b675-40de-a15d-5f3422fbeeb6")
@@ -161,8 +161,8 @@
 		(mid -0.53033 -2.21967)
 		(end -0.75 -2.75)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "ac3b8a94-ce05-46f6-8282-565ef5fac0b2")
@@ -172,8 +172,8 @@
 		(mid -0.749999 -2.000001)
 		(end -1.060659 -2.75)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.2032)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "70f518e4-7c16-46b9-b656-6766759efde6")
@@ -183,8 +183,8 @@
 		(mid 0.53033 -2.21967)
 		(end 0 -2)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.1524)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "6bcf0e44-7cce-4bb2-8bdf-6f5516fc8c63")
@@ -194,8 +194,8 @@
 		(mid 0.75 -2)
 		(end 0 -1.68934)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.2032)
+			(type solid)
 		)
 		(layer "F.SilkS")
 		(uuid "b17823ae-a682-444f-a62a-981ad0f88b74")
@@ -288,7 +288,7 @@
 		(uuid "2178f8a0-8f23-4fb5-bb09-7fe35f9956ab")
 	)
 	(group ""
-		(uuid "64b376fe-d46c-4a72-9c7b-29cfde20896f")
+		(uuid "577e574d-1dcb-4dee-a2f1-e3e4e76c5dbc")
 		(members "0a05a7b6-d426-4acb-9c32-da39534c1035" "11acadff-9f15-470d-86bc-84d0baf89068"
 			"6624efd9-3c6c-45ac-9995-9360160b8115" "6bcf0e44-7cce-4bb2-8bdf-6f5516fc8c63"
 			"6cd74b46-570e-4fba-9d5f-7c3cbfcb08ae" "70f518e4-7c16-46b9-b656-6766759efde6"
