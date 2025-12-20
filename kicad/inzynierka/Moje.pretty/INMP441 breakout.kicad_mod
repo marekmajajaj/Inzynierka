@@ -245,6 +245,7 @@
 		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
+		(thermal_bridge_angle 45)
 		(uuid "42051f61-a31c-45a7-941b-1476e05e4310")
 	)
 	(pad "2" thru_hole circle
