@@ -898,6 +898,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(wire
+		(pts
+			(xy 241.3 119.38) (xy 247.65 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f75c696-6e1a-4690-ba4d-673cb3dccec4")
+	)
 	(global_label "D12"
 		(shape input)
 		(at 86.36 44.45 0)
@@ -3607,6 +3617,37 @@
 				)
 				(justify left)
 				(hide yes)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 242.57 119.38 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9a7a6770-5357-43d7-84d2-3fa87703aa9f")
+		(property "Netclass" "3.3V"
+			(at 243.2685 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Component Class" ""
+			(at -44.45 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
 			)
 		)
 	)
@@ -11226,7 +11267,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 247.65 119.38 90)
+		(at 241.3 119.38 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11235,7 +11276,7 @@
 		(fields_autoplaced yes)
 		(uuid "d43dc185-ce63-47d7-bf0e-fcd96c1f92c5")
 		(property "Reference" "#PWR04"
-			(at 251.46 119.38 0)
+			(at 245.11 119.38 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11244,7 +11285,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 243.84 119.3799 90)
+			(at 237.49 119.3799 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11253,7 +11294,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 247.65 119.38 0)
+			(at 241.3 119.38 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11262,7 +11303,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 247.65 119.38 0)
+			(at 241.3 119.38 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11271,7 +11312,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 247.65 119.38 0)
+			(at 241.3 119.38 0)
 			(effects
 				(font
 					(size 1.27 1.27)
