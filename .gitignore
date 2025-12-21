@@ -39,3 +39,4 @@
 /kicad/inzynierka/*.kicad_prl
 /kicad/inzynierka/place_footprints.ini
 /kicad/inzynierka/place_footprints.log
+/kicad/inzynierka/gerber_to_order
