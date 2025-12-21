@@ -3631,7 +3631,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "9a7a6770-5357-43d7-84d2-3fa87703aa9f")
+		(uuid "fb8f39c6-fc8c-47f9-b8bc-415c103d605a")
 		(property "Netclass" "3.3V"
 			(at 243.2685 116.84 0)
 			(effects
@@ -3642,7 +3642,7 @@
 			)
 		)
 		(property "Component Class" ""
-			(at -44.45 2.54 0)
+			(at -64.77 7.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
