@@ -81,7 +81,7 @@
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
 		(tenting front back)
-		(grid_origin 118.72 98.725)
+		(grid_origin 101.5 100)
 		(pcbplotparams
 			(layerselection 0x00000000_00000000_55555555_5755f5ff)
 			(plot_on_all_layers_selection 0x00000000_00000000_00000000_00000000)
@@ -4136,7 +4136,7 @@
 			(uuid "f36bd906-18ce-4707-80dc-fcf327a57541")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1524)
@@ -7607,7 +7607,7 @@
 			(uuid "9ce662ee-e97f-4e69-9b7f-e07b2bd002ce")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1524)
@@ -12737,7 +12737,7 @@
 			(uuid "43c7d318-785d-4a4d-b562-8ea9f0f17caa")
 		)
 		(fp_line
-			(start -0.750001 -2.989341)
+			(start -0.750002 -2.989341)
 			(end -0.25 -2.989341)
 			(stroke
 				(width 0.1524)
@@ -14880,16 +14880,89 @@
 			)
 		)
 	)
-	(gr_rect
-		(start 16.5 15)
-		(end 186.5 190)
+	(gr_arc
+		(start 186.5 182)
+		(mid 184.156854 187.656854)
+		(end 178.5 190)
 		(stroke
 			(width 0.05)
 			(type default)
 		)
-		(fill no)
 		(layer "Edge.Cuts")
-		(uuid "b60239be-2266-46ab-88c8-c157966f2da3")
+		(uuid "4fee3123-ae7b-4eb2-a3d1-96d3d3f74b04")
+	)
+	(gr_line
+		(start 178.5 190)
+		(end 24.5 190)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "57d067d4-206b-43fe-9eda-d509ef07b251")
+	)
+	(gr_line
+		(start 186.5 23)
+		(end 186.5 182)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "588284ba-d1e6-4357-9272-7d0d40340c03")
+	)
+	(gr_arc
+		(start 16.5 23)
+		(mid 18.843146 17.343146)
+		(end 24.5 15)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6cf4aef0-e6bf-4832-acff-30823794947e")
+	)
+	(gr_arc
+		(start 24.5 190)
+		(mid 18.843146 187.656854)
+		(end 16.5 182)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "7231fedb-a023-4109-975d-ae7e61789be2")
+	)
+	(gr_line
+		(start 16.5 182)
+		(end 16.5 23)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "a1076497-2566-4900-b9de-6666064b535c")
+	)
+	(gr_line
+		(start 24.5 15)
+		(end 178.5 15)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "a5c4393c-0963-4ec0-b185-7a62f24ad56b")
+	)
+	(gr_arc
+		(start 178.5 15)
+		(mid 184.156854 17.343146)
+		(end 186.5 23)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "e0624abc-b3a1-4bed-9d14-93f5df3c2b9f")
 	)
 	(segment
 		(start 99.605 62.54)
