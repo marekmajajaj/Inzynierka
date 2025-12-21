@@ -1,0 +1,159 @@
+(footprint "RPI 3B"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -8.6 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "88ed892b-2e40-48b4-83c7-54064c5c6439")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "RPI 3B"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "7794cc64-e4b8-40a4-aa6c-10003ce7abaf")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "40633571-13c4-4ecd-b444-0f15b24bc871")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f6446730-6d11-4fec-a4e6-241f3c1bfb2d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_rect
+		(start -42.5 -28)
+		(end 42.5 28)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "b3e4817d-45f2-4ffc-86a7-ab9751db40ed")
+	)
+	(fp_text user "Raspberry Pi 3B"
+		(at -36 -24.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "9ee93596-7a81-43ec-9d86-72bdad00e1aa")
+		(effects
+			(font
+				(size 3 3)
+				(thickness 0.45)
+			)
+			(justify left)
+		)
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "a6a21a95-1607-4d66-9d80-3901847aca48")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "" np_thru_hole circle
+		(at -39 -24.5)
+		(size 2 2)
+		(drill 2.75)
+		(layers "*.Cu" "*.Mask")
+		(clearance 2)
+		(uuid "7bd50c1b-c175-4ec7-8da4-3d8c79e74d8a")
+	)
+	(pad "" np_thru_hole circle
+		(at -39 24.5)
+		(size 2 2)
+		(drill 2.75)
+		(layers "*.Cu" "*.Mask")
+		(clearance 2)
+		(uuid "f69b7e8d-54e9-4b47-9ad2-f3680311f914")
+	)
+	(pad "" np_thru_hole circle
+		(at 19 -24.5)
+		(size 2 2)
+		(drill 2.75)
+		(layers "*.Cu" "*.Mask")
+		(clearance 2)
+		(uuid "5c713717-844c-4947-9eab-7ff5c1501073")
+	)
+	(pad "" np_thru_hole circle
+		(at 19 24.5)
+		(size 2 2)
+		(drill 2.75)
+		(layers "*.Cu" "*.Mask")
+		(clearance 2)
+		(uuid "a8e20827-f69e-4a75-a61d-bdd3968739e7")
+	)
+	(zone
+		(net 0)
+		(net_name "")
+		(layers "F.Cu" "B.Cu")
+		(uuid "1dc9e774-7bd8-4270-81dd-2fcfd5a615b6")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(keepout
+			(tracks not_allowed)
+			(vias allowed)
+			(pads not_allowed)
+			(copperpour not_allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy 22.5 -29) (xy 57.5 -29) (xy 57.5 29) (xy 22.5 29)
+			)
+		)
+	)
+	(embedded_fonts no)
+)
