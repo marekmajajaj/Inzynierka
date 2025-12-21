@@ -16,7 +16,7 @@
 		)
 	)
 	(property "Value" "~"
-		(at 0 10.5 0)
+		(at 0 7.6 0)
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "d3af6687-8f20-4ee8-8b20-20417711a9bd")
@@ -227,8 +227,21 @@
 		(layer "F.CrtYd")
 		(uuid "b4dc2f07-f6bf-4eb3-85d4-a17c275e069f")
 	)
+	(fp_text user "X 00.000\nY 00.000"
+		(at 0 0 270)
+		(unlocked yes)
+		(layer "B.SilkS")
+		(uuid "66f6534b-cce0-4091-9b6b-2206991dbf4a")
+		(effects
+			(font
+				(size 1.016 1.016)
+				(thickness 0.1524)
+			)
+			(justify mirror)
+		)
+	)
 	(fp_text user "${REFERENCE}"
-		(at 0 12 0)
+		(at 0 9.1 0)
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "42e92c1b-c244-4ca4-beda-8fc1183cb2cd")
