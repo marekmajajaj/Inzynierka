@@ -49,6 +49,39 @@ For more information, please refer to <http://unlicense.org/>
 #define PERI_PHYS_BASE 0x3F000000
 #define BUS_TO_PHYS(x) ((x) & ~0xC0000000)
 
+#define DMA_BASE 0x00007000
+#define DMA_CHANNEL 6
+#define DMA_OFFSET 0x100
+#define DMA_ADDR (DMA_BASE + DMA_OFFSET * (DMA_CHANNEL >> 2))
+
+/* DMA CS Control and Status bits */
+#define DMA_ENABLE (0xFF0 / 4)
+#define DMA_CHANNEL_RESET (1 << 31)
+#define DMA_CHANNEL_ABORT (1 << 30)
+#define DMA_WAIT_ON_WRITES (1 << 28)
+#define DMA_PANIC_PRIORITY(x) ((x) << 20)
+#define DMA_PRIORITY(x) ((x) << 16)
+#define DMA_INTERRUPT_STATUS (1 << 2)
+#define DMA_END_FLAG (1 << 1)
+#define DMA_ACTIVE (1 << 0)
+#define DMA_DISDEBUG (1 << 28)
+
+/* DMA control block "info" field bits */
+#define DMA_NO_WIDE_BURSTS (1 << 26)
+#define DMA_PERIPHERAL_MAPPING(x) ((x) << 16)
+#define DMA_BURST_LENGTH(x) ((x) << 12)
+#define DMA_SRC_IGNORE (1 << 11)
+#define DMA_SRC_DREQ (1 << 10)
+#define DMA_SRC_WIDTH (1 << 9)
+#define DMA_SRC_INC (1 << 8)
+#define DMA_DEST_IGNORE (1 << 7)
+#define DMA_DEST_DREQ (1 << 6)
+#define DMA_DEST_WIDTH (1 << 5)
+#define DMA_DEST_INC (1 << 4)
+#define DMA_WAIT_RESP (1 << 3)
+#define DMA_2D_MODE (1 << 1)
+#define DMA_IRQ_EN (1 << 0)
+
 #define CM_BASE 0x00101000
 #define CM_LEN 0xA8
 #define CM_PWM 0xA0
@@ -97,7 +130,7 @@ For more information, please refer to <http://unlicense.org/>
 #define PWM_DMAC_DREQ(x) (x)
 
 #define GPIO_BASE 0x00200000
-#define GPIO_LEN 0x60
+#define GPIO_LEN 0xB4
 #define GPIO_FUNC_SELECT_CLEAR(x) ~(7 << ((x) * 3))
 #define GPIO_FUNC_SELECT_IN(x) (0 << ((x) * 3))
 #define GPIO_FUNC_SELECT_OUT(x) (1 << ((x) * 3))
@@ -117,12 +150,42 @@ For more information, please refer to <http://unlicense.org/>
 #define MEM_FLAG_COHERENT (2 << 2)
 #define MEM_FLAG_L1_NONALLOCATING (MEM_FLAG_DIRECT | MEM_FLAG_COHERENT)
 
-#define TICK_CNT 100
-#define CB_CNT (TICK_CNT * 2)
+//#define TICK_CNT 100
+//#define CB_CNT (TICK_CNT * 2)
+
+#define TICK_PWM 24
+#define TICK_DONE 25
+#define TICK_DUMMY 26
+
+#define CB_DELAY 32
 
 #define CLK_DIVI 1
 #define CLK_MICROS 1
 
+typedef struct DMACtrlReg
+{
+    uint32_t cs;      // DMA Channel Control and Status register
+    uint32_t cb_addr; // DMA Channel Control Block Address
+} DMACtrlReg;
+
+typedef struct DMAControlBlock
+{
+    uint32_t tx_info;    // Transfer information
+    uint32_t src;        // Source (bus) address
+    uint32_t dest;       // Destination (bus) address
+    uint32_t tx_len;     // Transfer length (in bytes)
+    uint32_t stride;     // 2D stride
+    uint32_t next_cb;    // Next DMAControlBlock (bus) address
+    uint32_t padding[2]; // 2-word padding
+} DMAControlBlock;
+
+typedef struct DMAMemHandle
+{
+    void *virtual_addr; // Virutal base address of the page
+    uint32_t bus_addr;  // Bus adress of the page, this is not a pointer because it does not point to valid virtual address
+    uint32_t mb_handle; // Used by mailbox property interface
+    uint32_t size;
+} DMAMemHandle;
 
 typedef struct CLKCtrlReg
 {
@@ -189,9 +252,50 @@ typedef struct GPIOCtrlReg
     uint32_t pull_encl1; // 0x9C, Pull-up/down enable clock
 } GPIOCtrlReg;
 
+int mailbox_fd = -1;
+DMAMemHandle *dma_cbs;
+DMAMemHandle *dma_ticks;
+//DMAMemHandle *dma_pwm_data;
+volatile DMACtrlReg *dma_reg;
 volatile PWMCtrlReg *pwm_reg;
 volatile CLKCtrlReg *clk_reg;
 volatile GPIOCtrlReg *gpio_reg;
+
+DMAMemHandle *dma_malloc(unsigned int size)
+{
+    if (mailbox_fd < 0)
+    {
+        mailbox_fd = mbox_open();
+        assert(mailbox_fd >= 0);
+    }
+
+    // Make `size` a multiple of PAGE_SIZE
+    size = ((size + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE;
+
+    DMAMemHandle *mem = (DMAMemHandle *)malloc(sizeof(DMAMemHandle));
+    // Documentation: https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+    mem->mb_handle = mem_alloc(mailbox_fd, size, PAGE_SIZE, MEM_FLAG_L1_NONALLOCATING);
+    mem->bus_addr = mem_lock(mailbox_fd, mem->mb_handle);
+    mem->virtual_addr = mapmem(BUS_TO_PHYS(mem->bus_addr), size);
+    mem->size = size;
+
+    assert(mem->bus_addr != 0);
+
+    fprintf(stderr, "MBox alloc: %d bytes, bus: %08X, virt: %08X\n", mem->size, mem->bus_addr, (uint32_t)mem->virtual_addr);
+
+    return mem;
+}
+
+void dma_free(DMAMemHandle *mem)
+{
+    if (mem->virtual_addr == NULL)
+        return;
+
+    unmapmem(mem->virtual_addr, mem->size);
+    mem_unlock(mailbox_fd, mem->mb_handle);
+    mem_free(mailbox_fd, mem->mb_handle);
+    mem->virtual_addr = NULL;
+}
 
 void *map_peripheral(uint32_t addr, uint32_t size)
 {
@@ -221,6 +325,119 @@ void *map_peripheral(uint32_t addr, uint32_t size)
     return result;
 }
 
+void dma_alloc_buffers()
+{
+    /* 
+     * 16   for filling pwm fifo
+     * 64*2 for timing
+     * 1    for info about finished 24bit collection
+     */
+    dma_cbs = dma_malloc((CB_DELAY + 64*2 + 1) * sizeof(DMAControlBlock));
+    
+    /*
+     * 24 for data
+     * 1  for PWM data sent to fifo
+     * 1  for info about finished 24bit collection
+     * 1  for dummy data
+     */
+    dma_ticks = dma_malloc((24 + 1 + 1 + 1) * sizeof(uint32_t));
+}
+
+static inline DMAControlBlock *ith_cb_virt_addr(int i) { return (DMAControlBlock *)dma_cbs->virtual_addr + i; }
+
+static inline uint32_t ith_cb_bus_addr(int i) { return dma_cbs->bus_addr + i * sizeof(DMAControlBlock); }
+
+static inline uint32_t *ith_tick_virt_addr(int i) { return (uint32_t *)dma_ticks->virtual_addr + i; }
+
+static inline uint32_t ith_tick_bus_addr(int i) { return dma_ticks->bus_addr + i * sizeof(uint32_t); }
+
+void dma_init_cbs()
+{
+    int i;
+    DMAControlBlock *cb;
+    
+    // Fill fifo
+    for (i = 0; i < CB_DELAY; i++)
+    {
+        cb = ith_cb_virt_addr(i);
+        cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
+        cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
+        cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
+        cb->tx_len = 4;
+        cb->next_cb = ith_cb_bus_addr(i + 1);
+    }
+    
+    // Tick block (i=16)
+    i=CB_DELAY;
+    cb = ith_cb_virt_addr(i);
+    cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP;
+    cb->src = PERI_BUS_BASE + GPIO_BASE + GPIO_LEVEL0;
+    cb->dest = ith_tick_bus_addr(TICK_DUMMY);
+    cb->tx_len = 4;
+    cb->next_cb = ith_cb_bus_addr(i + 1);
+
+    // Delay block (i=17)
+    i++;
+    cb = ith_cb_virt_addr(i);
+    cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
+    cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
+    cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
+    cb->tx_len = 4;
+    cb->next_cb = ith_cb_bus_addr(i + 2);
+    
+    for (i = (CB_DELAY+2)/2; i < (24+(CB_DELAY+2)/2); i++) // Blocks 18-65
+    {
+        // Tick block
+        cb = ith_cb_virt_addr(2 * i);
+        cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP;
+        cb->src = PERI_BUS_BASE + GPIO_BASE + GPIO_LEVEL0;
+        cb->dest = ith_tick_bus_addr(i-(CB_DELAY+2)/2);
+        cb->tx_len = 4;
+        cb->next_cb = ith_cb_bus_addr(2 * i + 1);
+
+        // Delay block
+        cb = ith_cb_virt_addr(2 * i + 1);
+        cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
+        cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
+        cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
+        cb->tx_len = 4;
+        cb->next_cb = ith_cb_bus_addr(2 * i + 2);
+    }
+    
+    // Info block (i=66)
+    i = 24*2 + CB_DELAY + 2;
+    cb = ith_cb_virt_addr(i);
+    cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP;
+    cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
+    cb->dest = ith_tick_bus_addr(TICK_DONE);
+    cb->tx_len = 4;
+    cb->next_cb = ith_cb_bus_addr(i+1);
+    
+    for (i = (24*2 + CB_DELAY + 2)/2; i < (63+(CB_DELAY+2)/2); i++) // Blocks 67-144
+    {
+        // Tick block
+        cb = ith_cb_virt_addr(2 * i + 1);
+        cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP;
+        cb->src = PERI_BUS_BASE + GPIO_BASE + GPIO_LEVEL0;
+        cb->dest = ith_tick_bus_addr(TICK_DUMMY);
+        cb->tx_len = 4;
+        cb->next_cb = ith_cb_bus_addr(2 * i + 2);
+
+        // Delay block
+        cb = ith_cb_virt_addr(2 * i + 2);
+        cb->tx_info = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
+        cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
+        cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
+        cb->tx_len = 4;
+        cb->next_cb = ith_cb_bus_addr(2 * i + 3);
+    }
+    // Go back to block 8
+    i = 63 * 2 + CB_DELAY + 2;
+    cb = ith_cb_virt_addr(i);
+    cb->next_cb = ith_cb_bus_addr(CB_DELAY);
+    
+}
+
 void init_hw_clk()
 {
     // See Chanpter 6.3, BCM2835 ARM peripherals for controlling the hardware clock
@@ -242,8 +459,8 @@ void init_hw_clk()
     usleep(10);
     
     printf("3 cm_crtl: %.32b\n", clk_reg->ctrl);
-    // Divide by 6 to get 3.2 MHz
-    clk_reg->div = BCM_PASSWD | CLK_DIV_DIVI(3);
+    // Divide by 3 to get 6.4 MHz
+    clk_reg->div = BCM_PASSWD | CLK_DIV_DIVI(6);
     usleep(10);
     
     printf("4 cm_crtl: %.32b\n", clk_reg->ctrl);
@@ -261,49 +478,45 @@ void init_pwm()
     //pwm_reg->status = -1;
     //usleep(500);
 
-    /*
-     * set number of bits to transmit
-     * e.g, if CLK_MICROS is 5, since we have set the frequency of the
-     * hardware clock to 100 MHZ, then the time taken for `100 * CLK_MICROS` bits
-     * is (500 / 100) = 5 us, this is how we control the DMA sampling rate
-     */
-    //pwm_reg->range1 = 100 * CLK_MICROS;
-    pwm_reg->range1 = 6;
+    pwm_reg->range1 = 2;
     usleep(100);
     
-    pwm_reg->data1 = 3;
+    //pwm_reg->data1 = 1;
+    //usleep(100);
+    
+    pwm_reg->range2 = 128;
     usleep(100);
     
-    pwm_reg->range2 = 32*6;
-    usleep(100);
-    
-    pwm_reg->data2 = 16*6;
+    pwm_reg->data2 = 64;
     usleep(100);
 
-    // enable PWM DMA, raise panic and dreq thresholds to 15
-    //pwm_reg->dma_cfg = PWM_DMAC_ENAB | PWM_DMAC_PANIC(15) | PWM_DMAC_DREQ(15);
-    //usleep(10);
-
-    // clear PWM fifo
-    //pwm_reg->ctrl = PWM_CTL_CLRF1;
-    //usleep(500);
-
-    // MS mode
-    pwm_reg->ctrl = PWM_CTL_MSEN1 | PWM_CTL_MSEN2;
+    // enable PWM DMA
+    pwm_reg->dma_cfg = PWM_DMAC_ENAB | PWM_DMAC_PANIC(15) | PWM_DMAC_DREQ(15);
     usleep(100);
-    
-    //pwm_reg->status = -1;
-    
+
+    // Channel 1 use fifo in serializer mode, channel 2 use data with MS in PWM mode
+    pwm_reg->ctrl = PWM_CTL_USEF1 | PWM_CTL_MODE1 | PWM_CTL_MSEN2;
+    usleep(100);
 }
 
-void pwm_on()
+void pwm_clear_fifo()
+{
+    // clear PWM fifo
+    pwm_reg->ctrl |= PWM_CTL_CLRF1;
+    usleep(100);
+    
+    // Single shot operation, no need to clear the bit
+}
+
+void pwm_start()
 {
     pwm_reg->ctrl |= PWM_CTL_PWEN1 | PWM_CTL_PWEN2;
     usleep(100);
     pwm_reg->status = -1;
+    usleep(100);
 }
 
-void pwm_off()
+void pwm_end()
 {
     pwm_reg->ctrl &= ~(PWM_CTL_PWEN1 | PWM_CTL_PWEN2);
     usleep(100);
@@ -311,12 +524,24 @@ void pwm_off()
 
 void init_gpio()
 {
-    // PWM reset
+    // GPIO reset
     gpio_reg->fun_sel0 = 0; // 0-9
     usleep(100);
     gpio_reg->fun_sel1 = 0; // 10-19
     usleep(100);
     gpio_reg->fun_sel2 &= ~(GPIO_FUNC_SELECT_CLEAR(9) & GPIO_FUNC_SELECT_CLEAR(8)); // 20-27
+    usleep(100);
+    gpio_reg->rise_en0 &= 0xF0000000; // 0-27
+    usleep(100);
+    gpio_reg->fall_en0 &= 0xF0000000;
+    usleep(100);
+    gpio_reg->high_en0 &= 0xF0000000;
+    usleep(100);
+    gpio_reg->low_en0 &= 0xF0000000;
+    usleep(100);
+    gpio_reg->a_rise_en0 &= 0xF0000000;
+    usleep(100);
+    gpio_reg->a_fall_en0 &= 0xF0000000;
     usleep(100);
     
     printf("fun_sel0 %.32b \nfun_sel1 %.32b \nfun_sel2 %.32b \nfun_sel3 %.32b \nfun_sel4 %.32b \nfun_sel5 %.32b\n\n",
@@ -329,18 +554,60 @@ void init_gpio()
     gpio_reg->fun_sel1 |= GPIO_FUNC_SELECT_ALT5(4) | GPIO_FUNC_SELECT_ALT5(5);
     
     // Falling edge detection on pin 12
-    gpio_reg->fall_en0 |= 1 << 12;
+    gpio_reg->a_rise_en0 |= 1 << 12;
     
     // Wypisanie aktualnych funkcji
     printf("fun_sel0 %.32b \nfun_sel1 %.32b \nfun_sel2 %.32b \nfun_sel3 %.32b \nfun_sel4 %.32b \nfun_sel5 %.32b\n\n",
         gpio_reg->fun_sel0, gpio_reg->fun_sel1, gpio_reg->fun_sel2, gpio_reg->fun_sel3, gpio_reg->fun_sel4, gpio_reg->fun_sel5);
 }
 
+void dma_start()
+{
+    // Set data for PWM (0b10101010...)
+    *(ith_tick_virt_addr(TICK_PWM)) = 0xAAAAAAAA;
+    
+    // Clear info data
+    *(ith_tick_virt_addr(TICK_DONE)) = 0;
+
+    // Reset the DMA channel
+    dma_reg->cs = DMA_CHANNEL_ABORT;
+    dma_reg->cs = 0;
+    dma_reg->cs = DMA_CHANNEL_RESET;
+    dma_reg->cb_addr = 0;
+
+    // Make cb_addr point to the first DMA control block and enable DMA transfer
+    dma_reg->cb_addr = ith_cb_bus_addr(0);
+    dma_reg->cs = DMA_PRIORITY(8) | DMA_PANIC_PRIORITY(8) | DMA_DISDEBUG;
+    dma_reg->cs |= DMA_WAIT_ON_WRITES | DMA_ACTIVE | DMA_INTERRUPT_STATUS | DMA_END_FLAG;
+}
+
+void dma_end()
+{
+    // Shutdown DMA channel, otherwise it won't stop after program exits
+    dma_reg->cs |= DMA_CHANNEL_ABORT;
+    usleep(100);
+    dma_reg->cs &= ~DMA_ACTIVE;
+    dma_reg->cs |= DMA_CHANNEL_RESET;
+    usleep(100);
+
+    // Release the memory used by DMA, otherwise the memory will be leaked after program exits
+    dma_free(dma_ticks);
+    dma_free(dma_cbs);
+
+    free(dma_ticks);
+    free(dma_cbs);
+}
+
 int main()
 {
     int i;
-    u_int8_t k = 0;
-    uint32_t *dane = malloc(sizeof(uint32_t) * 200);
+    uint32_t *ticks = malloc(sizeof(uint32_t) * 48);
+    uint32_t k = 0;
+    
+    uint8_t *dma_base_ptr = map_peripheral(DMA_BASE, PAGE_SIZE);
+    dma_reg = (DMACtrlReg *)(dma_base_ptr + DMA_CHANNEL * 0x100);
+    
+    //uint32_t *dane = malloc(sizeof(uint32_t) * 200);
     
 	pwm_reg = map_peripheral(PWM_BASE, PAGE_SIZE);
 
@@ -349,34 +616,43 @@ int main()
 
     gpio_reg = map_peripheral(GPIO_BASE, PAGE_SIZE);
     
+    dma_alloc_buffers();
+    printf("DMA buffers allocated\n");
+    usleep(100);
+
+    dma_init_cbs();
+    printf("DMA control blocks initiated\n");
+    usleep(100);
+
     init_hw_clk();
+    printf("Clock initiated\n");
+    usleep(100);
     
     init_gpio();
+    printf("GPIO initiated\n");
+    usleep(100);
     
     init_pwm();
+    printf("PWM initiated\n");
+    usleep(100);
     
-    pwm_on();
+    pwm_clear_fifo();
+    printf("PWM FIFO cleared\n");
+    usleep(100);
     
-    printf("cm_crtl: %.32b\n", clk_reg->ctrl);
-    printf("pwm_crtl: %.32b\n", pwm_reg->ctrl);
-    printf("pwm_stat: %.32b\n", pwm_reg->status);
+    dma_start();
+    printf("DMA started\n");
+    printf("tick pwm: %.8X\n", *(ith_tick_virt_addr(TICK_PWM)));
+    //usleep(1000000);
+
+    pwm_start();
+    printf("PWM started\n");
     
 /*
-    for (i = 0; i < 200; i++)
-    {
-        
-        while((gpio_reg->ev_stat0 & (1 << 12)))
-        {
-            k++;
-        }
-        dane[i] = gpio_reg->lvl0;
-        gpio_reg->ev_stat0 &= ~(1 << 12);
-    }
-*/
     i = 0;
+    gpio_reg->ev_stat0 = 1 << 12;
     while (i < 200)
     {
-        k++;
         if ((gpio_reg->ev_stat0 & (1 << 12)) == 0)
             continue;
         dane[i] = gpio_reg->lvl0;
@@ -384,13 +660,52 @@ int main()
         i++;
     }
     
+    
     for (i = 0; i < 200; i++)
     {
         printf("%3d: %.32b\n", i, dane[i]);
     }
     
     printf("%d\n", k);
+
+*/
+    for (i = 0; i < 2; i++)
+    {
+        while (*(ith_tick_virt_addr(TICK_DONE)) == 0)
+        {
+            //printf("%.8X\n", *(ith_tick_virt_addr(TICK_DONE)));
+            usleep(1);
+        }
+        //memcpy(&(ticks[i*24]), ith_tick_virt_addr(i*24), 24 * sizeof(uint32_t));
+        for(int j = 0; j < 24; j++)
+        {
+            ticks[i*24 + j] = *(ith_tick_virt_addr(j));
+        }
+        printf("%.8X: %.8X\n", &(ticks[i*24]), *(ith_tick_virt_addr(TICK_DONE)));
+        *(ith_tick_virt_addr(TICK_DONE)) = 0;
+    }
+
+    for (int i = 0; i < 48; i++)
+    {
+        printf("DMA %3d: %.32b\n", i, ticks[i]);
+    }
     
-    pwm_off();
-    free(dane);
+    /*
+    for(i = 0; i < (16 + 64*2 + 1); i++)
+    {
+        DMAControlBlock *cb;
+        cb = ith_cb_virt_addr(i);
+        printf("CB %3d: %.8X\n", i, cb->next_cb);
+    }
+    */
+    
+    printf("dma stat: %.32b", dma_reg->cs);
+    
+    printf("%d\n", k);
+    
+    pwm_end();
+
+    dma_end();
+    
+    free(ticks);
 }

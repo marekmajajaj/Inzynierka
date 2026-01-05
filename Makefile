@@ -5,4 +5,4 @@ dma-paced: dma-paced.o mailbox.o
 main: main.o mailbox.o
 
 clean:
-	rm -f ./*.o ./dma-unpaced ./dma-paced ./dma-demo
+	rm -f ./*.o ./dma-unpaced ./dma-paced ./dma-demo ./main
