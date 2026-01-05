@@ -156,21 +156,37 @@ typedef struct GPIOCtrlReg
     uint32_t padding1;   // 0x18, 4-byte padding
     uint32_t out_set0;   // 0x1C, Output set 0-31
     uint32_t out_set1;   // 0x20, Output set 32-53
-    uint32_t paddind2;   // 0x24, 4-byte paddin
+    uint32_t paddind2;   // 0x24, 4-byte padding
     uint32_t out_clr0;   // 0x28, Output clear 0-31
     uint32_t out_clr1;   // 0x2C, Output clear 32-53
-    uint32_t padding3;   // 0x30, 4-byte paddin
+    uint32_t padding3;   // 0x30, 4-byte padding
     uint32_t lvl0;       // 0x34, Pin level 0-31
     uint32_t lvl1;       // 0x38, Pin level 32-53
-    uint32_t padding4;   // 0x3C, 4-byte paddin
+    uint32_t padding4;   // 0x3C, 4-byte padding
     uint32_t ev_stat0;   // 0x40, Event detect status 0-31
     uint32_t ev_stat1;   // 0x44, Event detect status 32-53
-    uint32_t padding5;   // 0x48, 4-byte paddin
+    uint32_t padding5;   // 0x48, 4-byte padding
     uint32_t rise_en0;   // 0x4C, Enable rising edge detect 0-31
     uint32_t rise_en1;   // 0x50, Enable rising edge detect 32-53
-    uint32_t padding6;   // 0x54, 4-byte paddin
+    uint32_t padding6;   // 0x54, 4-byte padding
     uint32_t fall_en0;   // 0x58, Enable falling edge detect 0-31
     uint32_t fall_en1;   // 0x5C, Enable falling edge detect 32-53
+    uint32_t padding7;   // 0x60, 4-byte padding
+    uint32_t high_en0;   // 0x64, Enable high detect 0-31
+    uint32_t high_en1;   // 0x68, Enable high detect 32-53
+    uint32_t padding8;   // 0x6C, 4-byte padding
+    uint32_t low_en0;    // 0x70, Enable low detect 0-31
+    uint32_t low_en1;    // 0x74, Enable low detect 32-53
+    uint32_t padding9;   // 0x78, 4-byte padding
+    uint32_t a_rise_en0; // 0x7C, Enable async. rising edge detect 0-31
+    uint32_t a_rise_en1; // 0x80, Enable async. rising edge detect 32-53
+    uint32_t padding10;  // 0x84, 4-byte padding
+    uint32_t a_fall_en0; // 0x88, Enable async. falling edge detect 0-31
+    uint32_t a_fall_en1; // 0x8C, Enable async. falling edge detect 32-53
+    uint32_t padding11;  // 0x90, 4-byte padding
+    uint32_t pull_en;    // 0x94, Pull-up/down enable
+    uint32_t pull_encl0; // 0x98, Pull-up/down enable clock
+    uint32_t pull_encl1; // 0x9C, Pull-up/down enable clock
 } GPIOCtrlReg;
 
 volatile PWMCtrlReg *pwm_reg;
@@ -272,20 +288,48 @@ void init_pwm()
     //pwm_reg->ctrl = PWM_CTL_CLRF1;
     //usleep(500);
 
-    // enable PWM channel 1 and use fifo
-    pwm_reg->ctrl = PWM_CTL_PWEN1 | PWM_CTL_MSEN1 | PWM_CTL_PWEN2 | PWM_CTL_MSEN2;
+    // MS mode
+    pwm_reg->ctrl = PWM_CTL_MSEN1 | PWM_CTL_MSEN2;
     usleep(100);
     
     //pwm_reg->status = -1;
     
 }
 
+void pwm_on()
+{
+    pwm_reg->ctrl |= PWM_CTL_PWEN1 | PWM_CTL_PWEN2;
+    usleep(100);
+    pwm_reg->status = -1;
+}
+
+void pwm_off()
+{
+    pwm_reg->ctrl &= ~(PWM_CTL_PWEN1 | PWM_CTL_PWEN2);
+    usleep(100);
+}
+
 void init_gpio()
 {
-    // PWM on ports 12 and 13
-    gpio_reg->fun_sel1 &= GPIO_FUNC_SELECT_CLEAR(8);
-    gpio_reg->fun_sel1 &= GPIO_FUNC_SELECT_CLEAR(9);
-    gpio_reg->fun_sel1 |= (GPIO_FUNC_SELECT_ALT5(8) | GPIO_FUNC_SELECT_ALT5(9));
+    // PWM reset
+    gpio_reg->fun_sel0 = 0; // 0-9
+    usleep(100);
+    gpio_reg->fun_sel1 = 0; // 10-19
+    usleep(100);
+    gpio_reg->fun_sel2 &= ~(GPIO_FUNC_SELECT_CLEAR(9) & GPIO_FUNC_SELECT_CLEAR(8)); // 20-27
+    usleep(100);
+    
+    printf("fun_sel0 %.32b \nfun_sel1 %.32b \nfun_sel2 %.32b \nfun_sel3 %.32b \nfun_sel4 %.32b \nfun_sel5 %.32b\n\n",
+        gpio_reg->fun_sel0, gpio_reg->fun_sel1, gpio_reg->fun_sel2, gpio_reg->fun_sel3, gpio_reg->fun_sel4, gpio_reg->fun_sel5);
+    
+    // PWM on pins 12 and 13
+    gpio_reg->fun_sel1 |= GPIO_FUNC_SELECT_ALT0(2) | GPIO_FUNC_SELECT_ALT0(3);
+    
+    // TX/RX on pin 14 and 15 (they were there originally)
+    gpio_reg->fun_sel1 |= GPIO_FUNC_SELECT_ALT5(4) | GPIO_FUNC_SELECT_ALT5(5);
+    
+    // Falling edge detection on pin 12
+    gpio_reg->fall_en0 |= 1 << 12;
     
     // Wypisanie aktualnych funkcji
     printf("fun_sel0 %.32b \nfun_sel1 %.32b \nfun_sel2 %.32b \nfun_sel3 %.32b \nfun_sel4 %.32b \nfun_sel5 %.32b\n\n",
@@ -295,6 +339,7 @@ void init_gpio()
 int main()
 {
     int i;
+    u_int8_t k = 0;
     uint32_t *dane = malloc(sizeof(uint32_t) * 200);
     
 	pwm_reg = map_peripheral(PWM_BASE, PAGE_SIZE);
@@ -310,15 +355,33 @@ int main()
     
     init_pwm();
     
+    pwm_on();
+    
     printf("cm_crtl: %.32b\n", clk_reg->ctrl);
     printf("pwm_crtl: %.32b\n", pwm_reg->ctrl);
     printf("pwm_stat: %.32b\n", pwm_reg->status);
     
+/*
     for (i = 0; i < 200; i++)
     {
+        
+        while((gpio_reg->ev_stat0 & (1 << 12)))
+        {
+            k++;
+        }
         dane[i] = gpio_reg->lvl0;
-        //dane[i] = pwm_reg->data2;
-        //usleep(100);
+        gpio_reg->ev_stat0 &= ~(1 << 12);
+    }
+*/
+    i = 0;
+    while (i < 200)
+    {
+        k++;
+        if ((gpio_reg->ev_stat0 & (1 << 12)) == 0)
+            continue;
+        dane[i] = gpio_reg->lvl0;
+        gpio_reg->ev_stat0 = 1 << 12;
+        i++;
     }
     
     for (i = 0; i < 200; i++)
@@ -326,5 +389,8 @@ int main()
         printf("%3d: %.32b\n", i, dane[i]);
     }
     
+    printf("%d\n", k);
+    
+    pwm_off();
     free(dane);
 }
