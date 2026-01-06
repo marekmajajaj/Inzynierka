@@ -157,9 +157,11 @@ For more information, please refer to <http://unlicense.org/>
 #define TICK_DONE 25
 #define TICK_DUMMY 26
 
-#define CB_DELAY 32
+#define CB_DELAY 18 // 16 or higher(multiple of 2s)
+#define CB_START 1 // Used to control 24bit data delay
 
-#define CLK_DIVI 1
+#define CLK_DIVI 12
+#define CLK_SEL CLK_CTL_SRC_OSC
 #define CLK_MICROS 1
 
 typedef struct DMACtrlReg
@@ -383,7 +385,7 @@ void dma_init_cbs()
     cb->src = ith_tick_bus_addr(TICK_PWM); // PWM data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
     cb->tx_len = 4;
-    cb->next_cb = ith_cb_bus_addr(i + 2);
+    cb->next_cb = ith_cb_bus_addr(i + 1);
     
     for (i = (CB_DELAY+2)/2; i < (24+(CB_DELAY+2)/2); i++) // Blocks 18-65
     {
@@ -456,17 +458,17 @@ void init_hw_clk()
     printf("2 cm_crtl: %.32b\n", clk_reg->ctrl);
     // Set clock source to oscillator (19.2 MHz)
     clk_reg->ctrl = BCM_PASSWD | CLK_CTL_SRC(CLK_CTL_SRC_OSC);
-    usleep(10);
+    usleep(100);
     
     printf("3 cm_crtl: %.32b\n", clk_reg->ctrl);
     // Divide by 3 to get 6.4 MHz
-    clk_reg->div = BCM_PASSWD | CLK_DIV_DIVI(6);
-    usleep(10);
+    clk_reg->div = BCM_PASSWD | CLK_DIV_DIVI(CLK_DIVI);
+    usleep(100);
     
     printf("4 cm_crtl: %.32b\n", clk_reg->ctrl);
     // Enable the clock
     clk_reg->ctrl |= (BCM_PASSWD | CLK_CTL_ENAB);
-    usleep(10);
+    usleep(100);
     printf("5 cm_crtl: %.32b\n", clk_reg->ctrl);
 }
 
@@ -487,7 +489,7 @@ void init_pwm()
     pwm_reg->range2 = 128;
     usleep(100);
     
-    pwm_reg->data2 = 64;
+    pwm_reg->data2 = 4;
     usleep(100);
 
     // enable PWM DMA
@@ -576,7 +578,7 @@ void dma_start()
     dma_reg->cb_addr = 0;
 
     // Make cb_addr point to the first DMA control block and enable DMA transfer
-    dma_reg->cb_addr = ith_cb_bus_addr(0);
+    dma_reg->cb_addr = ith_cb_bus_addr(CB_START);
     dma_reg->cs = DMA_PRIORITY(8) | DMA_PANIC_PRIORITY(8) | DMA_DISDEBUG;
     dma_reg->cs |= DMA_WAIT_ON_WRITES | DMA_ACTIVE | DMA_INTERRUPT_STATUS | DMA_END_FLAG;
 }
@@ -702,6 +704,8 @@ int main()
     printf("dma stat: %.32b", dma_reg->cs);
     
     printf("%d\n", k);
+
+    printf("cb delay: %d\n", CB_DELAY);
     
     pwm_end();
 
