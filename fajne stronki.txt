@@ -31,6 +31,7 @@ https://github.com/WiringPi/WiringPi/tree/master
 
 https://github.com/fandahao17/Raspberry-Pi-DMA-Tutorial
 https://github.com/hzeller/rpi-gpio-dma-demo?tab=readme-ov-file
+^ Zawiera kod pozwalający bardzo szybko odczytywać dane z pinów
 
 https://vtechworks.lib.vt.edu/server/api/core/bitstreams/038479b6-115b-4931-aaeb-5cedf22193fb/content
 
@@ -46,3 +47,10 @@ NAH wymaga za dużo głośników
 https://www.researchgate.net/publication/12488507_On_reconstruction_of_acoustic_pressure_fields_using_the_Helmholtz_equation_least_squares_method
 
 https://www.protoexpress.com/blog/best-layout-tips-for-high-speed-and-high-current-pcb-traces/
+
+https://github.com/stacksmashing/pico-tpmsniffer/tree/main
+^ Zawiera kod pozwalający bardzo szybko odczytywać dane z pinów
+
+https://elinux.org/BCM2835_datasheet_errata#p105_table
+https://elinux.org/BCM2835_registers#CM
+^ Rejestr do kontrolowania zegarów

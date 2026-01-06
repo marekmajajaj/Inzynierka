@@ -1,0 +1,22 @@
+PROGRAMOWANIE:
+
+	Dane sprzętowe
+		Raspberry Pi 3 Model B
+			https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
+			https://pinout.xyz/
+
+		Mikrofony IMNP441
+			https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf
+		
+	Rejestry do kontrolowania zegarów
+		https://elinux.org/BCM2835_datasheet_errata#p105_table
+		https://elinux.org/BCM2835_registers#CM
+
+	Kod od którego zacząłem:
+		https://github.com/fandahao17/Raspberry-Pi-DMA-Tutorial
+
+	Użyte zewnętrzne biblioteki:
+		mailbox.h
+			https://github.com/raspberrypi/userland/blob/master/host_applications/linux/apps/hello_pi/hello_fft/mailbox.h
+			https://github.com/raspberrypi/userland/blob/master/host_applications/linux/apps/hello_pi/hello_fft/mailbox.c
+
