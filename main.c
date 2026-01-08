@@ -118,10 +118,18 @@ For more information, please refer to <http://unlicense.org/>
 #define PWM_DAT2 9
 
 #define PWM_CTL_MSEN2 (1 << 15)
+#define PWM_CTL_USEF2 (1 << 13)
+#define PWM_CTL_POLA2 (1 << 12)
+#define PWM_CTL_SBIT2 (1 << 11)
+#define PWM_CTL_RPTL2 (1 << 10)
+#define PWM_CTL_MODE2 (1 << 9)
 #define PWM_CTL_PWEN2 (1 << 8)
 #define PWM_CTL_MSEN1 (1 << 7)
 #define PWM_CTL_CLRF1 (1 << 6)
 #define PWM_CTL_USEF1 (1 << 5)
+#define PWM_CTL_POLA1 (1 << 4)
+#define PWM_CTL_SBIT1 (1 << 3)
+#define PWM_CTL_RPTL1 (1 << 2)
 #define PWM_CTL_MODE1 (1 << 1)
 #define PWM_CTL_PWEN1 (1 << 0)
 
@@ -163,6 +171,30 @@ For more information, please refer to <http://unlicense.org/>
 #define CLK_DIVI 12
 #define CLK_SEL CLK_CTL_SRC_OSC
 #define CLK_MICROS 1
+
+#define SMPL_TO_COLLECT 12500
+#define SMPL_MICS_NUMBER 16
+
+#define PIN_D1 0
+#define PIN_D2 1
+#define PIN_D3 2
+#define PIN_D4 3
+#define PIN_D5 4
+#define PIN_D6 5
+#define PIN_D7 6
+#define PIN_D8 7
+#define PIN_D9 8
+#define PIN_D10 9
+#define PIN_D11 10
+#define PIN_D12 11
+#define PIN_D13 16
+#define PIN_D14 17
+#define PIN_D15 18
+#define PIN_D16 19
+#define PIN_D17 20
+#define PIN_D18 21
+#define PIN_D19 22
+#define PIN_D20 23
 
 typedef struct DMACtrlReg
 {
@@ -489,7 +521,7 @@ void init_pwm()
     pwm_reg->range2 = 128;
     usleep(100);
     
-    pwm_reg->data2 = 4;
+    pwm_reg->data2 = 64;
     usleep(100);
 
     // enable PWM DMA
@@ -497,7 +529,7 @@ void init_pwm()
     usleep(100);
 
     // Channel 1 use fifo in serializer mode, channel 2 use data with MS in PWM mode
-    pwm_reg->ctrl = PWM_CTL_USEF1 | PWM_CTL_MODE1 | PWM_CTL_MSEN2;
+    pwm_reg->ctrl = PWM_CTL_SBIT1 | PWM_CTL_USEF1 | PWM_CTL_MODE1 | PWM_CTL_POLA2 | PWM_CTL_MSEN2;
     usleep(100);
 }
 
@@ -602,9 +634,40 @@ void dma_end()
 
 int main()
 {
-    int i;
-    uint32_t *ticks = malloc(sizeof(uint32_t) * 48);
-    uint32_t k = 0;
+    uint32_t i, j, k;
+    uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
+    uint32_t **mic_data = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
+    uint32_t tmp = 0;
+    uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
+
+    if(ticks == 0)
+    {
+        printf("Memory allocation error");
+        return -1;
+    }
+
+    if(mic_data == 0)
+    {
+        free(ticks);
+        printf("Memory allocation error");
+        return -1;
+    }
+
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+       mic_data[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
+       if(mic_data[i] == 0)
+       {
+            printf("Memory allocation error");
+            for(j = 0; j < i; j++)
+            {
+                free(mic_data[j]);
+            }
+            free(mic_data);
+            free(ticks);
+            return -1;
+       }
+    }
     
     uint8_t *dma_base_ptr = map_peripheral(DMA_BASE, PAGE_SIZE);
     dma_reg = (DMACtrlReg *)(dma_base_ptr + DMA_CHANNEL * 0x100);
@@ -671,45 +734,69 @@ int main()
     printf("%d\n", k);
 
 */
-    for (i = 0; i < 2; i++)
+    k = 0;
+    for (i = 0; i < SMPL_TO_COLLECT; i++)
     {
         while (*(ith_tick_virt_addr(TICK_DONE)) == 0)
         {
             //printf("%.8X\n", *(ith_tick_virt_addr(TICK_DONE)));
             usleep(1);
         }
+        // Wait at least 2^18 clock cycles (this loop executes every 24 cycles)
+        if(k < 12000)
+        {
+            k++;
+            continue;
+        }
         //memcpy(&(ticks[i*24]), ith_tick_virt_addr(i*24), 24 * sizeof(uint32_t));
-        for(int j = 0; j < 24; j++)
+        for(j = 0; j < 24; j++)
         {
             ticks[i*24 + j] = *(ith_tick_virt_addr(j));
         }
-        printf("%.8X: %.8X\n", &(ticks[i*24]), *(ith_tick_virt_addr(TICK_DONE)));
         *(ith_tick_virt_addr(TICK_DONE)) = 0;
     }
 
-    for (int i = 0; i < 48; i++)
+    printf("Aquisition ended\n");
+    
+    pwm_end();
+    printf("PWM stopped\n");
+
+    dma_end();
+    printf("DMA stopped\n");
+
+    for (i = 0; i < SMPL_TO_COLLECT; i++)
     {
-        printf("DMA %3d: %.32b\n", i, ticks[i]);
+        //printf("DMA %10d: %.32b\n", i, ticks[i]);
+        for (j = 0; j < SMPL_MICS_NUMBER; j++)
+        {
+            //mic_data[j][i] = 0;
+            for (k = 0; k < 24; k++)
+            {
+                // Get pin value
+                tmp = (ticks[i*24 + k] & ~(1 << data_pins[j])) ? 1 : 0;
+                // Insert into correct bit
+                //mic_data[j][i] |= tmp << (23 - k);
+            }
+        }
+    }
+
+    printf("Initial data preparation finished");
+
+    for(i = 0; i < SMPL_TO_COLLECT; i++)
+    {
+        printf("%4d: %d\n", i, mic_data[1][i]);
     }
     
-    /*
-    for(i = 0; i < (16 + 64*2 + 1); i++)
-    {
-        DMAControlBlock *cb;
-        cb = ith_cb_virt_addr(i);
-        printf("CB %3d: %.8X\n", i, cb->next_cb);
-    }
-    */
-    
-    printf("dma stat: %.32b", dma_reg->cs);
-    
-    printf("%d\n", k);
+    printf("dma stat: %.32b\n", dma_reg->cs);
 
     printf("cb delay: %d\n", CB_DELAY);
     
-    pwm_end();
-
-    dma_end();
-    
     free(ticks);
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        free(mic_data[i]);
+    }
+    free(mic_data);
+    
+    return 0;
 }
