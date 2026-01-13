@@ -168,12 +168,12 @@ For more information, please refer to <http://unlicense.org/>
 #define CB_DELAY 18 // 16 or higher(multiple of 2s)
 #define CB_START 1 // Used to control 24bit data delay
 
-#define CLK_DIVI 12
+#define CLK_DIVI 6
 #define CLK_SEL CLK_CTL_SRC_OSC
 #define CLK_MICROS 1
 
-#define SMPL_TO_COLLECT 12500
-#define SMPL_MICS_NUMBER 16
+#define SMPL_TO_COLLECT (12500*3*2)
+#define SMPL_MICS_NUMBER 1
 
 #define PIN_D1 0
 #define PIN_D2 1
@@ -558,6 +558,7 @@ void pwm_end()
 
 void init_gpio()
 {
+    printf("gpio levels: %.32b\n", gpio_reg->lvl0);
     // GPIO reset
     gpio_reg->fun_sel0 = 0; // 0-9
     usleep(100);
@@ -593,6 +594,9 @@ void init_gpio()
     // Wypisanie aktualnych funkcji
     printf("fun_sel0 %.32b \nfun_sel1 %.32b \nfun_sel2 %.32b \nfun_sel3 %.32b \nfun_sel4 %.32b \nfun_sel5 %.32b\n\n",
         gpio_reg->fun_sel0, gpio_reg->fun_sel1, gpio_reg->fun_sel2, gpio_reg->fun_sel3, gpio_reg->fun_sel4, gpio_reg->fun_sel5);
+
+    printf("gpio levels: %.32b\n", gpio_reg->lvl0);
+
 }
 
 void dma_start()
@@ -634,11 +638,15 @@ void dma_end()
 
 int main()
 {
-    uint32_t i, j, k;
+    uint32_t i, j;
+    volatile uint32_t k;
+    volatile uint32_t *done;
     uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
     uint32_t **mic_data = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
     uint32_t tmp = 0;
     uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
+    
+    FILE *file;
 
     if(ticks == 0)
     {
@@ -667,6 +675,20 @@ int main()
             free(ticks);
             return -1;
        }
+    }
+    
+    file = fopen("output.raw", "wb");
+    
+    if(file == 0)
+    {
+        printf("Opening file error");
+        for(j = 0; j < i; j++)
+        {
+            free(mic_data[j]);
+        }
+        free(mic_data);
+        free(ticks);
+        return -1;
     }
     
     uint8_t *dma_base_ptr = map_peripheral(DMA_BASE, PAGE_SIZE);
@@ -734,20 +756,26 @@ int main()
     printf("%d\n", k);
 
 */
+    done = ith_tick_virt_addr(TICK_DONE);
+
     k = 0;
     for (i = 0; i < SMPL_TO_COLLECT; i++)
     {
-        while (*(ith_tick_virt_addr(TICK_DONE)) == 0)
+        while (*done == 0)
         {
             //printf("%.8X\n", *(ith_tick_virt_addr(TICK_DONE)));
-            usleep(1);
+            //usleep(1);
+            ;
         }
         // Wait at least 2^18 clock cycles (this loop executes every 24 cycles)
-        if(k < 12000)
+        if(k < 100000)
         {
             k++;
+            *(ith_tick_virt_addr(TICK_DONE)) = 0;
+            i--;
             continue;
         }
+        
         //memcpy(&(ticks[i*24]), ith_tick_virt_addr(i*24), 24 * sizeof(uint32_t));
         for(j = 0; j < 24; j++)
         {
@@ -769,23 +797,48 @@ int main()
         //printf("DMA %10d: %.32b\n", i, ticks[i]);
         for (j = 0; j < SMPL_MICS_NUMBER; j++)
         {
-            //mic_data[j][i] = 0;
+            mic_data[j][i] = 0;
             for (k = 0; k < 24; k++)
             {
                 // Get pin value
-                tmp = (ticks[i*24 + k] & ~(1 << data_pins[j])) ? 1 : 0;
+                tmp = (ticks[i*24 + k] & (1 << data_pins[j])) ? 1 : 0;
                 // Insert into correct bit
-                //mic_data[j][i] |= tmp << (23 - k);
+                mic_data[j][i] |= tmp << (23 - k);
+
+                /*
+                if (k < 8)
+                    mic_data[j][i*3] |= tmp << (7 - k);
+                else if (k < 16 && k >= 8)
+                    mic_data[j][i*3 + 1] |= tmp << (15 - k);
+                else
+                    mic_data[j][i*3 + 2] |= tmp << (23 - k);
+                */
             }
+            // Sign extension
+            tmp = 0b1 << 23;
+            mic_data[j][i] = (mic_data[j][i] ^ tmp) - tmp;
+            //mic_data[j][i] = (uint32_t)((int32_t)mic_data[j][i] * 256);
         }
     }
 
     printf("Initial data preparation finished");
 
+    
     for(i = 0; i < SMPL_TO_COLLECT; i++)
     {
-        printf("%4d: %d\n", i, mic_data[1][i]);
+        printf("%4d: %d\n", i, mic_data[0][i]);
     }
+    
+    
+    /*
+    for(i = 0; i < SMPL_TO_COLLECT * 24; i++)
+    {
+        printf("%5d: %.32b\n", i, ticks[i]);
+    }
+    */
+    fwrite(mic_data[0], sizeof(uint32_t), SMPL_TO_COLLECT, file);
+    
+    printf("Written data to file\n");
     
     printf("dma stat: %.32b\n", dma_reg->cs);
 
@@ -797,6 +850,8 @@ int main()
         free(mic_data[i]);
     }
     free(mic_data);
+    
+    fclose(file);
     
     return 0;
 }
