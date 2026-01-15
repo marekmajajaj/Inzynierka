@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <string.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <math.h>
 
 #include "mailbox.h"
 
@@ -172,8 +173,15 @@ For more information, please refer to <http://unlicense.org/>
 #define CLK_SEL CLK_CTL_SRC_OSC
 #define CLK_MICROS 1
 
-#define SMPL_TO_COLLECT (12500*3*2)
-#define SMPL_MICS_NUMBER 1
+#define SMPL_RATE (19200000/CLK_DIVI/2/64)
+//#define SMPL_TO_COLLECT (SMPL_RATE*3)
+#define SMPL_TO_COLLECT 10
+#define SMPL_MICS_NUMBER 16
+
+#define RESOLUTION_VERT 11
+#define RESOLUTION_HOR 11
+#define ANGLE_MAX_VERT M_PI_4   // pi/4
+#define ANGLE_MAX_HOR M_PI_4
 
 #define PIN_D1 0
 #define PIN_D2 1
@@ -636,67 +644,192 @@ void dma_end()
     free(dma_cbs);
 }
 
+// TODO: Y i Z zamienic
+double calculateDelay(double micX, double micY, double freq, double wave_speed, double angle_theta, double angle_phi)
+{
+    // Wspolrzedne sferyczne do wektora, r = 1
+    double normX = sin(angle_theta) * cos(angle_phi);
+    double normY = sin(angle_theta) * sin(angle_phi);
+    // Ignorujemy Z, poniewaz micZ = 0
+
+    // Iloczyn skalarny wektora normalnego i ujemnych wzpolrzednych mikrofonu
+    double dist = (normX * -micX) + (normY * -micY);
+
+    // Obliczenie opoznienia
+    return dist/wave_speed*freq;
+}
+
 int main()
 {
+    // ---------------------------------- TWORZENIE ZMIENNYCH ----------------------------------
+
     uint32_t i, j;
     volatile uint32_t k;
+    uint32_t i_start;
     volatile uint32_t *done;
     uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
     uint32_t **mic_data = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
     uint32_t tmp = 0;
     uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
+
+    double mic_posX[20];
+    double mic_posY[20];
+    double *beam_angle_theta = malloc(sizeof(double) * RESOLUTION_VERT);
+    double *beam_angle_phi = malloc(sizeof(double) * RESOLUTION_HOR);
+    double angle_step;
+    double ***mic_delay = malloc(sizeof(double **) * SMPL_MICS_NUMBER);
     
-    FILE *file;
+    FILE *file_out, *file_pos;
 
-    if(ticks == 0)
+    if(ticks == 0 || mic_data == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0)
     {
         printf("Memory allocation error");
-        return -1;
-    }
-
-    if(mic_data == 0)
-    {
-        free(ticks);
-        printf("Memory allocation error");
-        return -1;
+        goto code_error_end;
     }
 
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
-       mic_data[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
-       if(mic_data[i] == 0)
-       {
-            printf("Memory allocation error");
-            for(j = 0; j < i; j++)
-            {
-                free(mic_data[j]);
-            }
-            free(mic_data);
-            free(ticks);
-            return -1;
-       }
-    }
-    
-    file = fopen("output.raw", "wb");
-    
-    if(file == 0)
-    {
-        printf("Opening file error");
-        for(j = 0; j < i; j++)
+        mic_data[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
+        mic_delay[i] = malloc(sizeof(double *) * RESOLUTION_HOR);
+        if(mic_data[i] == 0 || mic_delay[i] == 0)
         {
-            free(mic_data[j]);
+            printf("Memory allocation error");
+            goto code_error_end;
         }
-        free(mic_data);
-        free(ticks);
-        return -1;
+        for(j = 0; j < RESOLUTION_HOR; j++)
+        {
+            mic_delay[i][j] = malloc(sizeof(double) * RESOLUTION_VERT);
+            if(mic_delay[i][j] == 0)
+            {
+                printf("Memory allocation error");
+                goto code_error_end;
+            }
+        }
     }
+    
+    // ---------------------------------- OTWIERANIE PLIKOW ----------------------------------
+    
+    file_out = fopen("output.raw", "wb");
+    
+    if(file_out == 0)
+    {
+        printf("Opening output file error");
+        goto code_error_end;
+    }
+
+    // Otwarcie pliku z pozycjami mikrofonow
+    if(SMPL_MICS_NUMBER == 16)
+    {
+        file_pos = fopen("mic_pos16.txt", "r");
+    }
+    else
+    {
+        file_pos = fopen("mic_pos20.txt", "r");
+    }
+    
+    if(file_pos == 0)
+    {
+        printf("Opening position file error");
+        goto code_error_end;
+    }
+
+    // Pobranie danych z pliku
+    for (i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        fscanf(file_pos, "%lf %lf", &(mic_posX[i]), &(mic_posY[i]));
+        //printf("%lf %lf\n", mic_posX[i], mic_posY[i]);
+    }
+
+    fclose(file_pos);
+
+    // ---------------------------------- PRZYGOTOWANIE DANYCH ----------------------------------
+
+    // Dlugosc azymutalna (phi)
+    // Zaczecie od srodka
+    if(RESOLUTION_HOR % 2 == 1)
+    {
+    	i_start = (RESOLUTION_HOR - 1) / 2;
+    }
+    else
+    {
+        i_start = RESOLUTION_HOR / 2;
+    }
+    
+    // Obliczenie katow (dla prawej polowy)
+    for(i = i_start; i < RESOLUTION_HOR-1; i++)
+    {
+        if(RESOLUTION_HOR % 2 == 1)
+        {
+            beam_angle_phi[i] = (double)(i - i_start) * ANGLE_MAX_HOR / (RESOLUTION_HOR - 1.0d) * 2.0d;
+        }
+        else
+        {
+            beam_angle_phi[i] = (double)((i - i_start) * 2 + 1) * ANGLE_MAX_HOR / (RESOLUTION_HOR - 2.0d);
+        }
+    }
+    beam_angle_phi[RESOLUTION_HOR - 1] = ANGLE_MAX_HOR;
+
+    // Kopiowanie katow do lewej polowy
+    for(i = 0; i < i_start; i++)
+    {
+        beam_angle_phi[i] = -beam_angle_phi[RESOLUTION_HOR - 1 - i];
+        printf("phi%d: %lf\n",i,beam_angle_phi[i]);
+    }
+
+
+    // Odleglosc zenitalna (theta)
+    // Zaczecie od srodka
+    if(RESOLUTION_VERT % 2 == 1)
+    {
+    	i_start = (RESOLUTION_VERT - 1) / 2;
+    }
+    else
+    {
+        i_start = RESOLUTION_VERT / 2;
+    }
+
+    // Obliczenie katow (dla prawej polowy)
+    for(i = i_start; i < RESOLUTION_VERT-1; i++)
+    {
+        if(RESOLUTION_VERT % 2 == 1)
+        {
+            beam_angle_theta[i] = (double)(i - i_start) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 1.0d) * 2.0d;
+        }
+        else
+        {
+            beam_angle_theta[i] = (double)((i - i_start) * 2 + 1) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 2.0d);
+        }
+    }
+    beam_angle_theta[RESOLUTION_VERT - 1] = ANGLE_MAX_VERT;
+
+    // Kopiowanie katow do lewej polowy
+    for(i = 0; i < i_start; i++)
+    {
+        beam_angle_theta[i] = -beam_angle_theta[RESOLUTION_VERT - 1 - i];
+        printf("theta%d: %lf\n",i,beam_angle_theta[i]);
+
+    }
+
+
+    // Obliczenie opoznien
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        for(j = 0; j < RESOLUTION_HOR; j++)
+        {
+            for(k = 0; k < RESOLUTION_VERT; k++)
+            {
+                mic_delay[i][j][k] = calculateDelay(mic_posX[i], mic_posY[i], SMPL_RATE, 340.0d, beam_angle_theta[j], beam_angle_phi[k]);
+            }
+        }
+    }
+
+    // ---------------------------------- REJESTRY ----------------------------------
     
     uint8_t *dma_base_ptr = map_peripheral(DMA_BASE, PAGE_SIZE);
     dma_reg = (DMACtrlReg *)(dma_base_ptr + DMA_CHANNEL * 0x100);
     
     //uint32_t *dane = malloc(sizeof(uint32_t) * 200);
-    
-	pwm_reg = map_peripheral(PWM_BASE, PAGE_SIZE);
+    pwm_reg = map_peripheral(PWM_BASE, PAGE_SIZE);
 
     uint8_t *cm_base_ptr = map_peripheral(CM_BASE, CM_LEN);
     clk_reg = (CLKCtrlReg *)(cm_base_ptr + CM_PWM);
@@ -722,6 +855,8 @@ int main()
     init_pwm();
     printf("PWM initiated\n");
     usleep(100);
+
+    // ---------------------------------- ROZPOCZECIE AKWIZYCJI ----------------------------------
     
     pwm_clear_fifo();
     printf("PWM FIFO cleared\n");
@@ -730,7 +865,6 @@ int main()
     dma_start();
     printf("DMA started\n");
     printf("tick pwm: %.8X\n", *(ith_tick_virt_addr(TICK_PWM)));
-    //usleep(1000000);
 
     pwm_start();
     printf("PWM started\n");
@@ -767,8 +901,8 @@ int main()
             //usleep(1);
             ;
         }
-        // Wait at least 2^18 clock cycles (this loop executes every 24 cycles)
-        if(k < 100000)
+        // Wait at least 2^18 clock cycles (this loop executes every 64 cycles)
+        if(k < 6000)
         {
             k++;
             *(ith_tick_virt_addr(TICK_DONE)) = 0;
@@ -785,6 +919,8 @@ int main()
     }
 
     printf("Aquisition ended\n");
+
+    // ---------------------------------- PROCESOWANIE DANYCH ----------------------------------
     
     pwm_end();
     printf("PWM stopped\n");
@@ -836,22 +972,51 @@ int main()
         printf("%5d: %.32b\n", i, ticks[i]);
     }
     */
-    fwrite(mic_data[0], sizeof(uint32_t), SMPL_TO_COLLECT, file);
+    fwrite(mic_data[0], sizeof(uint32_t), SMPL_TO_COLLECT, file_out);
     
     printf("Written data to file\n");
     
     printf("dma stat: %.32b\n", dma_reg->cs);
 
     printf("cb delay: %d\n", CB_DELAY);
-    
+
+    // ---------------------------------- KONIEC PROGRAMU ----------------------------------
+
     free(ticks);
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         free(mic_data[i]);
+        for(j = 0; j < RESOLUTION_HOR; j++)
+        {
+            free(mic_delay[i][j]);
+        }
+        free(mic_delay[i]);
     }
     free(mic_data);
-    
-    fclose(file);
-    
+    free(beam_angle_theta);
+    free(beam_angle_phi);
+    fclose(file_out);
     return 0;
+
+    // ----------------------------- KONIEC PROGRAMU: ERROR EDITION -----------------------------
+
+code_error_end:
+    if(file_out != 0)
+        fclose(file_out);
+    if(file_pos != 0)
+        fclose(file_pos);
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        free(mic_data[i]);
+        for(j = 0; j < RESOLUTION_HOR; j++)
+        {
+            free(mic_delay[i][j]);
+        }
+        free(mic_delay[i]);
+    }
+    free(mic_data);
+    free(beam_angle_theta);
+    free(beam_angle_phi);
+    free(ticks);
+    return -1;
 }
