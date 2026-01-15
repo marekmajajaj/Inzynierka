@@ -648,8 +648,8 @@ double calculateDelay(double micX, double micY, double freq, double wave_speed, 
 {
     // Wspolrzedne sferyczne do wektora, r = 1
     // Traktujemy micY jako micZ i micX jako -micY
-    double normX = -cos(angle_theta)*sin(angle_phi)
-    double normY = sin(theta);
+    double normX = -cos(angle_theta)*sin(angle_phi);
+    double normY = sin(angle_theta);
 
     // Iloczyn skalarny wektora normalnego i ujemnych wzpolrzednych mikrofonu
     double dist = (normX * -micX) + (normY * -micY);
@@ -792,14 +792,14 @@ int main()
     {
         if(RESOLUTION_VERT % 2 == 1)
         {
-            beam_angle_theta[i] = (double)(i - i_start) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 1.0d) * 2.0d;
+            beam_angle_theta[i] = (double)(i - i_start) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 1.0d) * 2.0d + M_PI_2;
         }
         else
         {
-            beam_angle_theta[i] = (double)((i - i_start) * 2 + 1) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 2.0d);
+            beam_angle_theta[i] = (double)((i - i_start) * 2 + 1) * ANGLE_MAX_VERT / (RESOLUTION_VERT - 2.0d) + M_PI_2;
         }
     }
-    beam_angle_theta[RESOLUTION_VERT - 1] = ANGLE_MAX_VERT;
+    beam_angle_theta[RESOLUTION_VERT - 1] = ANGLE_MAX_VERT + M_PI_2;
 
     // Kopiowanie katow do lewej polowy
     for(i = 0; i < i_start; i++)
