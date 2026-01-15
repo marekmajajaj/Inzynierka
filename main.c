@@ -644,13 +644,12 @@ void dma_end()
     free(dma_cbs);
 }
 
-// TODO: Y i Z zamienic
 double calculateDelay(double micX, double micY, double freq, double wave_speed, double angle_theta, double angle_phi)
 {
     // Wspolrzedne sferyczne do wektora, r = 1
-    double normX = sin(angle_theta) * cos(angle_phi);
-    double normY = sin(angle_theta) * sin(angle_phi);
-    // Ignorujemy Z, poniewaz micZ = 0
+    // Traktujemy micY jako micZ i micX jako -micY
+    double normX = -cos(angle_theta)*sin(angle_phi)
+    double normY = sin(theta);
 
     // Iloczyn skalarny wektora normalnego i ujemnych wzpolrzednych mikrofonu
     double dist = (normX * -micX) + (normY * -micY);
