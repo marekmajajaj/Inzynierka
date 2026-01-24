@@ -169,13 +169,13 @@ For more information, please refer to <http://unlicense.org/>
 #define CB_DELAY 18 // 16 or higher(multiple of 2s)
 #define CB_START 1 // Used to control 24bit data delay
 
-#define CLK_DIVI 6
+#define CLK_DIVI 12
 #define CLK_SEL CLK_CTL_SRC_OSC
 #define CLK_MICROS 1
 
 #define SMPL_RATE (19200000/CLK_DIVI/2/64)
-//#define SMPL_TO_COLLECT (SMPL_RATE*3)
-#define SMPL_TO_COLLECT 10
+#define SMPL_TO_COLLECT (SMPL_RATE*10)
+//#define SMPL_TO_COLLECT 10
 #define SMPL_MICS_NUMBER 16
 
 #define RESOLUTION_VERT 11
@@ -183,26 +183,26 @@ For more information, please refer to <http://unlicense.org/>
 #define ANGLE_MAX_VERT M_PI_4   // pi/4
 #define ANGLE_MAX_HOR M_PI_4
 
-#define PIN_D1 0
-#define PIN_D2 1
-#define PIN_D3 2
-#define PIN_D4 3
-#define PIN_D5 4
-#define PIN_D6 5
-#define PIN_D7 6
-#define PIN_D8 7
-#define PIN_D9 8
+#define PIN_D1 6
+#define PIN_D2 16
+#define PIN_D3 1
+#define PIN_D4 5
+#define PIN_D5 7
+#define PIN_D6 0
+#define PIN_D7 8
+#define PIN_D8 11
+#define PIN_D9 25
 #define PIN_D10 9
-#define PIN_D11 10
-#define PIN_D12 11
-#define PIN_D13 16
-#define PIN_D14 17
+#define PIN_D11 24
+#define PIN_D12 10
+#define PIN_D13 23
+#define PIN_D14 22
 #define PIN_D15 18
-#define PIN_D16 19
-#define PIN_D17 20
-#define PIN_D18 21
-#define PIN_D19 22
-#define PIN_D20 23
+#define PIN_D16 27
+#define PIN_D17 17
+#define PIN_D18 4
+#define PIN_D19 3
+#define PIN_D20 2
 
 typedef struct DMACtrlReg
 {
@@ -530,6 +530,7 @@ void init_pwm()
     usleep(100);
     
     pwm_reg->data2 = 64;
+    //pwm_reg->data2 = 4;
     usleep(100);
 
     // enable PWM DMA
@@ -901,7 +902,7 @@ int main()
             ;
         }
         // Wait at least 2^18 clock cycles (this loop executes every 64 cycles)
-        if(k < 6000)
+        if(k < 10000)
         {
             k++;
             *(ith_tick_virt_addr(TICK_DONE)) = 0;
@@ -961,7 +962,7 @@ int main()
     
     for(i = 0; i < SMPL_TO_COLLECT; i++)
     {
-        printf("%4d: %d\n", i, mic_data[0][i]);
+        printf("%4d: %d\n", i, mic_data[2][i]);
     }
     
     
@@ -971,7 +972,12 @@ int main()
         printf("%5d: %.32b\n", i, ticks[i]);
     }
     */
-    fwrite(mic_data[0], sizeof(uint32_t), SMPL_TO_COLLECT, file_out);
+    
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        fwrite(mic_data[i], sizeof(uint32_t), SMPL_TO_COLLECT, file_out);
+    }
+    
     
     printf("Written data to file\n");
     
