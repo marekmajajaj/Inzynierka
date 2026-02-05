@@ -204,6 +204,8 @@ For more information, please refer to <http://unlicense.org/>
 #define PIN_D19 3
 #define PIN_D20 2
 
+#define FIR_DELAY_LENGTH 21
+
 typedef struct DMACtrlReg
 {
     uint32_t cs;      // DMA Channel Control and Status register
@@ -659,6 +661,91 @@ double calculateDelay(double micX, double micY, double freq, double wave_speed, 
     return dist/wave_speed*freq;
 }
 
+void filterIir(double* x, double* y, int lenX)
+{
+    int i;
+    const double a2 = -0.353327144716459,
+        b1 = 0.676663572358229,
+        b2 = -0.676663572358229;
+    double x1 = 0.0, y1 = 0.0;
+
+    for(i = o; i < lenX; i++)
+    {
+        y[i] = b1 * x[i] + b2 * x1 - a2 * y1;
+
+        x1 = x[i];
+        y1 = y[i];
+    }
+}
+
+inline double sinc(double x)
+{
+    if(x == 0)
+    	return 1.0;
+
+    return sin(M_PI*x)/M_PI/x;
+}
+
+inline double fractionPart(double x)
+{
+    return x-floor(x);
+}
+
+inline double blackmanWindow(double x, int n)
+{
+    return 0.42 - 0.5*cos(2*M_PI*x/(n-1)) + 0.08*cos(4*M_PI*x/(n-1));
+}
+
+void calculateDelayFir(double* h, int n, double delay)
+{
+    int i;
+    uint32_t m = (n-1)/2
+    for(i = 0; i < n; i++)
+    {
+        h[i] = sinc(i - fractionPart(delay) - m) * blackmanWindow(i, n);
+    }
+}
+
+void applyDelay(double* x, double* y, double delay, int lenX, int lenH)
+{
+    int i, j;
+    double *h = malloc(sizeof(double) * lenH);
+    double tmp;
+    int delay_int = (int)delay;
+    // Opoznienie, czesc calkowita
+    for(i = 0; i < delay_int; i++)
+    {
+        y[i] = 0;
+    }
+
+    // Opoznienie, czesc ulamkowa
+    calculateDelayFir(h, lenH, delay);
+    for(i = 0; i < lenX - delay_int; i++)
+    {
+    	tmp = 0.0;
+        for(j = 0; j < lenH; j++)
+        {
+            if(i - j < 0)
+                continue;
+            tmp += x[i-j] * h[j];
+        }
+        y[i+delay_int] = tmp;
+    }
+
+    free(h);
+}
+
+double rms(double* x, uint32_t lenX)
+{
+    int i;
+    double res = 0.0;
+    for(i = 0; i < lenX; i++)
+    {
+        res += x[i]*x[i];
+    }
+    return sqrt(res/lenX);
+}
+
 int main()
 {
     // ---------------------------------- TWORZENIE ZMIENNYCH ----------------------------------
@@ -669,6 +756,8 @@ int main()
     volatile uint32_t *done;
     uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
     uint32_t **mic_data = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
+    uint32_t **mic_mod = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
+    uint32_t **mic_tmp;
     uint32_t tmp = 0;
     uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
 
@@ -681,7 +770,7 @@ int main()
     
     FILE *file_out, *file_pos;
 
-    if(ticks == 0 || mic_data == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0)
+    if(ticks == 0 || mic_data == 0 || mic_mod == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0)
     {
         printf("Memory allocation error");
         goto code_error_end;
@@ -690,8 +779,9 @@ int main()
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         mic_data[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
+        mic_mod[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
         mic_delay[i] = malloc(sizeof(double *) * RESOLUTION_HOR);
-        if(mic_data[i] == 0 || mic_delay[i] == 0)
+        if(mic_data[i] == 0 || mic_mod[i] == 0 || mic_delay[i] == 0)
         {
             printf("Memory allocation error");
             goto code_error_end;
@@ -991,6 +1081,7 @@ int main()
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         free(mic_data[i]);
+        free(mic_mod[i]);
         for(j = 0; j < RESOLUTION_HOR; j++)
         {
             free(mic_delay[i][j]);
@@ -998,6 +1089,7 @@ int main()
         free(mic_delay[i]);
     }
     free(mic_data);
+    free(mic_mod);
     free(beam_angle_theta);
     free(beam_angle_phi);
     fclose(file_out);
@@ -1013,6 +1105,7 @@ code_error_end:
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         free(mic_data[i]);
+        free(mic_mod[i]);
         for(j = 0; j < RESOLUTION_HOR; j++)
         {
             free(mic_delay[i][j]);
@@ -1020,6 +1113,7 @@ code_error_end:
         free(mic_delay[i]);
     }
     free(mic_data);
+    free(mic_mod);
     free(beam_angle_theta);
     free(beam_angle_phi);
     free(ticks);
