@@ -661,20 +661,24 @@ double calculateDelay(double micX, double micY, double freq, double wave_speed, 
     return dist/wave_speed*freq;
 }
 
-void filterIir(double* x, double* y, int lenX)
+void filter_iir(int32_t* x, int32_t* y, int lenX)
 {
     int i;
     const double a2 = -0.353327144716459,
         b1 = 0.676663572358229,
         b2 = -0.676663572358229;
     double x1 = 0.0, y1 = 0.0;
+    double xtmp, ytmp;
 
-    for(i = o; i < lenX; i++)
+    for(i = 0; i < lenX; i++)
     {
-        y[i] = b1 * x[i] + b2 * x1 - a2 * y1;
+        xtmp = (double)x[i];
+        ytmp = b1 * xtmp + b2 * x1 - a2 * y1;
 
-        x1 = x[i];
-        y1 = y[i];
+        x1 = xtmp;
+        y1 = ytmp;
+
+        y[i] = (int32_t)ytmp;
     }
 }
 
@@ -686,27 +690,27 @@ inline double sinc(double x)
     return sin(M_PI*x)/M_PI/x;
 }
 
-inline double fractionPart(double x)
+inline double fraction_part(double x)
 {
     return x-floor(x);
 }
 
-inline double blackmanWindow(double x, int n)
+inline double blackman_window(double x, int n)
 {
     return 0.42 - 0.5*cos(2*M_PI*x/(n-1)) + 0.08*cos(4*M_PI*x/(n-1));
 }
 
-void calculateDelayFir(double* h, int n, double delay)
+void calculate_delay_fir(double* h, int n, double delay)
 {
     int i;
-    uint32_t m = (n-1)/2
+    uint32_t m = (n-1)/2;
     for(i = 0; i < n; i++)
     {
-        h[i] = sinc(i - fractionPart(delay) - m) * blackmanWindow(i, n);
+        h[i] = sinc(i - fraction_part(delay) - m) * blackman_window(i, n);
     }
 }
 
-void applyDelay(double* x, double* y, double delay, int lenX, int lenH)
+void apply_delay(int32_t* x, int32_t* y, double delay, int lenX, int lenH)
 {
     int i, j;
     double *h = malloc(sizeof(double) * lenH);
@@ -719,7 +723,7 @@ void applyDelay(double* x, double* y, double delay, int lenX, int lenH)
     }
 
     // Opoznienie, czesc ulamkowa
-    calculateDelayFir(h, lenH, delay);
+    calculate_delay_fir(h, lenH, delay);
     for(i = 0; i < lenX - delay_int; i++)
     {
     	tmp = 0.0;
@@ -727,23 +731,23 @@ void applyDelay(double* x, double* y, double delay, int lenX, int lenH)
         {
             if(i - j < 0)
                 continue;
-            tmp += x[i-j] * h[j];
+            tmp += (double)x[i-j] * h[j];
         }
-        y[i+delay_int] = tmp;
+        y[i+delay_int] = (int32_t)tmp;
     }
 
     free(h);
 }
 
-double rms(double* x, uint32_t lenX)
+double rms(int32_t* x, uint32_t lenX)
 {
     int i;
     double res = 0.0;
     for(i = 0; i < lenX; i++)
     {
-        res += x[i]*x[i];
+        res += (double)x[i]*(double)x[i]/lenX;
     }
-    return sqrt(res/lenX);
+    return sqrt(res);
 }
 
 int main()
@@ -755,9 +759,9 @@ int main()
     uint32_t i_start;
     volatile uint32_t *done;
     uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
-    uint32_t **mic_data = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
-    uint32_t **mic_mod = malloc(sizeof(uint32_t *) * SMPL_MICS_NUMBER);
-    uint32_t **mic_tmp;
+    int32_t **mic_data = malloc(sizeof(int32_t *) * SMPL_MICS_NUMBER);
+    int32_t **mic_mod = malloc(sizeof(int32_t *) * SMPL_MICS_NUMBER);
+    int32_t **mic_tmp;
     uint32_t tmp = 0;
     uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
 
@@ -767,8 +771,9 @@ int main()
     double *beam_angle_phi = malloc(sizeof(double) * RESOLUTION_HOR);
     double angle_step;
     double ***mic_delay = malloc(sizeof(double **) * SMPL_MICS_NUMBER);
+    double delay_min = 999999.0;
     
-    FILE *file_out, *file_pos;
+    FILE *file_out, *file_out_filt, *file_pos;
 
     if(ticks == 0 || mic_data == 0 || mic_mod == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0)
     {
@@ -778,8 +783,8 @@ int main()
 
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
-        mic_data[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
-        mic_mod[i] = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT);
+        mic_data[i] = malloc(sizeof(int32_t) * SMPL_TO_COLLECT);
+        mic_mod[i] = malloc(sizeof(int32_t) * SMPL_TO_COLLECT);
         mic_delay[i] = malloc(sizeof(double *) * RESOLUTION_HOR);
         if(mic_data[i] == 0 || mic_mod[i] == 0 || mic_delay[i] == 0)
         {
@@ -800,8 +805,9 @@ int main()
     // ---------------------------------- OTWIERANIE PLIKOW ----------------------------------
     
     file_out = fopen("output.raw", "wb");
+    file_out_filt = fopen("output_filt.raw", "wb");
     
-    if(file_out == 0)
+    if(file_out == 0 || file_out_filt == 0)
     {
         printf("Opening output file error");
         goto code_error_end;
@@ -909,6 +915,8 @@ int main()
             for(k = 0; k < RESOLUTION_VERT; k++)
             {
                 mic_delay[i][j][k] = calculateDelay(mic_posX[i], mic_posY[i], SMPL_RATE, 340.0d, beam_angle_theta[j], beam_angle_phi[k]);
+                if(mic_delay[i][j][k] < delay_min)
+                    delay_min = mic_delay[i][j][k];
             }
         }
     }
@@ -1042,19 +1050,19 @@ int main()
             }
             // Sign extension
             tmp = 0b1 << 23;
-            mic_data[j][i] = (mic_data[j][i] ^ tmp) - tmp;
+            mic_data[j][i] = (int32_t)(((uint32_t)mic_data[j][i] ^ tmp) - tmp);
             //mic_data[j][i] = (uint32_t)((int32_t)mic_data[j][i] * 256);
         }
     }
 
-    printf("Initial data preparation finished");
+    printf("Initial data preparation finished\n");
 
-    
+    /*
     for(i = 0; i < SMPL_TO_COLLECT; i++)
     {
         printf("%4d: %d\n", i, mic_data[2][i]);
     }
-    
+    */
     
     /*
     for(i = 0; i < SMPL_TO_COLLECT * 24; i++)
@@ -1065,15 +1073,35 @@ int main()
     
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
-        fwrite(mic_data[i], sizeof(uint32_t), SMPL_TO_COLLECT, file_out);
+        fwrite(mic_data[i], sizeof(int32_t), SMPL_TO_COLLECT, file_out);
     }
+
+    printf("Written data to file output.raw\n");
+
+
+    // --------------------------------- WSTĘPNY FILTR IIR ---------------------------------
     
+
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        filter_iir(&(mic_data[i][0]), &(mic_mod[i][0]), SMPL_TO_COLLECT);
+    }
+    mic_tmp = mic_data;
+    mic_data = mic_mod;
+    mic_mod = mic_tmp;
+    mic_tmp = 0;
+
     
-    printf("Written data to file\n");
-    
+    for(i = 0; i < SMPL_MICS_NUMBER; i++)
+    {
+        fwrite(mic_data[i], sizeof(int32_t), SMPL_TO_COLLECT, file_out_filt);
+    }
+
+    /*
     printf("dma stat: %.32b\n", dma_reg->cs);
 
     printf("cb delay: %d\n", CB_DELAY);
+    */
 
     // ---------------------------------- KONIEC PROGRAMU ----------------------------------
 
@@ -1092,7 +1120,10 @@ int main()
     free(mic_mod);
     free(beam_angle_theta);
     free(beam_angle_phi);
-    fclose(file_out);
+    if(file_out != 0)
+    	fclose(file_out);
+    if(file_out_filt != 0)
+    	fclose(file_out_filt);
     return 0;
 
     // ----------------------------- KONIEC PROGRAMU: ERROR EDITION -----------------------------
@@ -1100,6 +1131,8 @@ int main()
 code_error_end:
     if(file_out != 0)
         fclose(file_out);
+    if(file_out_filt != 0)
+    	fclose(file_out_filt);
     if(file_pos != 0)
         fclose(file_pos);
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
