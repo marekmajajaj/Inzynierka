@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -174,16 +175,18 @@ For more information, please refer to <http://unlicense.org/>
 #define CLK_MICROS 1
 
 #define SMPL_RATE (19200000/CLK_DIVI/2/64)
-//#define SMPL_TO_COLLECT (SMPL_RATE*10)
-#define SMPL_TO_COLLECT 1064
+#define SMPL_TO_COLLECT (SMPL_RATE + 40)
+//#define SMPL_TO_COLLECT (1024*3 + 40)
 #define SMPL_MICS_NUMBER 16
 #define SMPL_SKIP (SMPL_RATE*4)
 #define SMPL_HEATMAP_OFFSET 40
 
-#define RESOLUTION_VERT 21
-#define RESOLUTION_HOR 21
-#define ANGLE_MAX_VERT M_PI_4   // pi/4
-#define ANGLE_MAX_HOR M_PI_4
+#define RESOLUTION_VERT 51
+#define RESOLUTION_HOR 51
+//#define ANGLE_MAX_VERT M_PI_2   // pi/4
+//#define ANGLE_MAX_HOR M_PI_2
+#define ANGLE_MAX_VERT (35/180.0*M_PI)
+#define ANGLE_MAX_HOR (35/180.0*M_PI)
 
 #define PIN_D1 6
 #define PIN_D2 16
@@ -663,7 +666,7 @@ double calculateDelay(double micX, double micY, double freq, double wave_speed, 
     return dist/wave_speed*freq;
 }
 
-void filter_iir(int32_t* x, int32_t* y, int lenX)
+void filter_iir(int32_t* x, double* y, int lenX)
 {
     int i;
     const double a2 = -0.353327144716459,
@@ -675,16 +678,14 @@ void filter_iir(int32_t* x, int32_t* y, int lenX)
     for(i = 0; i < lenX; i++)
     {
         xtmp = (double)x[i];
-        ytmp = b1 * xtmp + b2 * x1 - a2 * y1;
+        y[i] = b1 * xtmp + b2 * x1 - a2 * y1;
 
         x1 = xtmp;
-        y1 = ytmp;
-
-        y[i] = (int32_t)ytmp;
+        y1 = y[i];
     }
 }
 
-double sinc(double x)
+inline double sinc(double x)
 {
     if(x == 0)
     	return 1.0;
@@ -692,27 +693,27 @@ double sinc(double x)
     return sin(M_PI*x)/M_PI/x;
 }
 
-double fraction_part(double x)
+inline double fraction_part(double x)
 {
     return x-floor(x);
 }
 
-double blackman_window(double x, int n)
+inline double blackman_window(double x, int n)
 {
     return 0.42 - 0.5*cos(2*M_PI*x/(n-1)) + 0.08*cos(4*M_PI*x/(n-1));
 }
 
-void calculate_delay_fir(double* h, int n, double delay)
+void calculate_delay_fir(double* h, double* win, int n, double delay)
 {
     int i;
     uint32_t m = (n-1)/2;
     for(i = 0; i < n; i++)
     {
-        h[i] = sinc(i - fraction_part(delay) - m) * blackman_window(i, n);
+        h[i] = sinc(i - delay - m) * win[i];
     }
 }
 
-void apply_delay(int32_t* x, int32_t* y, double* h, double delay, int lenX, int lenH)
+void apply_delay(double* x, double* y, double* h, double* win, double delay, int lenX, int lenH)
 {
     int i, j;
     //volatile double *hhhhh;
@@ -735,7 +736,8 @@ void apply_delay(int32_t* x, int32_t* y, double* h, double delay, int lenX, int 
     }
 
     // Opoznienie, czesc ulamkowa
-    calculate_delay_fir(&(h[0]), lenH, delay);
+    
+    calculate_delay_fir(h, win, lenH, delay - (double)delay_int);
     for(i = 0; i < lenX - delay_int; i++)
     {
     	tmp = 0.0;
@@ -743,23 +745,29 @@ void apply_delay(int32_t* x, int32_t* y, double* h, double delay, int lenX, int 
         {
             if(i - j < 0)
                 continue;
-            tmp += (double)(x[i-j]) * (h[j]);
+            tmp += (x[i-j]) * (h[j]);
         }
-        y[i+delay_int] = (int32_t)tmp;
+        y[i+delay_int] = tmp;
     }
+    /*
+    for(i = 0; i < lenX - delay_int; i++)
+    {
+        y[i+delay_int] = x[i];
+    }
+    */
 
     //free(hhhhh);
 }
 
 double rms(double* x, uint32_t lenX)
 {
-    int i;
+    uint32_t i;
     double res = 0.0;
     for(i = 0; i < lenX; i++)
     {
-        res += (double)(x[i])*(double)(x[i])/lenX;
+        res += (x[i])*(x[i]);
     }
-    return sqrt(res);
+    return sqrt(res/(double)lenX);
 }
 
 int main()
@@ -772,8 +780,9 @@ int main()
     volatile uint32_t *done;
     uint32_t *ticks = malloc(sizeof(uint32_t) * SMPL_TO_COLLECT * 24);
     int32_t **mic_data = malloc(sizeof(int32_t *) * SMPL_MICS_NUMBER);
-    int32_t **mic_mod = malloc(sizeof(int32_t *) * SMPL_MICS_NUMBER);
-    int32_t **mic_tmp = 0;
+    double **mic_mod1 = malloc(sizeof(double *) * SMPL_MICS_NUMBER);
+    double **mic_mod2 = malloc(sizeof(double *) * SMPL_MICS_NUMBER);
+    //int32_t **mic_tmp = 0;
     double *mic_sum = malloc(sizeof(double) * (SMPL_TO_COLLECT - SMPL_HEATMAP_OFFSET));
     uint32_t tmp = 0;
     uint8_t data_pins[] = {PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_D8, PIN_D9, PIN_D10, PIN_D11, PIN_D12, PIN_D13, PIN_D14, PIN_D15, PIN_D16, PIN_D17, PIN_D18, PIN_D19, PIN_D20};
@@ -785,16 +794,21 @@ int main()
     //double angle_step;
     double ***mic_delay = malloc(sizeof(double **) * SMPL_MICS_NUMBER);
     double delay_min = 999999.0;
+    double black_win[FIR_DELAY_LENGTH];
 
     double *h = malloc(sizeof(double) * FIR_DELAY_LENGTH);
     double **heatmap = malloc(sizeof(double*) * RESOLUTION_HOR);
     double heat_max_val = -1;
     uint32_t heat_max_i = 0, heat_max_j = 0;
+
+    int img_w, img_h, img_ch;
+    uint32_t idx_img;
+    unsigned char* img;
     
     FILE *file_out, *file_out_filt, *file_out_heatmap;
     FILE *file_pos;
 
-    if(ticks == 0 || mic_data == 0 || mic_mod == 0 || mic_sum == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0 || h == 0 || heatmap == 0)
+    if(ticks == 0 || mic_data == 0 || mic_mod1 == 0 || mic_mod2 == 0 || mic_sum == 0 || beam_angle_theta == 0 || beam_angle_phi == 0 || mic_delay == 0 || h == 0 || heatmap == 0)
     {
         printf("Memory allocation error");
         goto code_error_end;
@@ -803,9 +817,10 @@ int main()
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         mic_data[i] = malloc(sizeof(int32_t) * SMPL_TO_COLLECT);
-        mic_mod[i] = malloc(sizeof(int32_t) * SMPL_TO_COLLECT);
+        mic_mod1[i] = malloc(sizeof(double) * SMPL_TO_COLLECT);
+        mic_mod2[i] = malloc(sizeof(double) * SMPL_TO_COLLECT);
         mic_delay[i] = malloc(sizeof(double *) * RESOLUTION_HOR);
-        if(mic_data[i] == 0 || mic_mod[i] == 0 || mic_delay[i] == 0)
+        if(mic_data[i] == 0 || mic_mod1[i] == 0 || mic_mod2[i] == 0 || mic_delay[i] == 0)
         {
             printf("Memory allocation error");
             goto code_error_end;
@@ -951,6 +966,12 @@ int main()
         }
     }
 
+    // Okno Blackmana
+    for(i = 0; i < FIR_DELAY_LENGTH; i++)
+    {
+        black_win[i] = blackman_window(i, FIR_DELAY_LENGTH);
+    }
+
     // ---------------------------------- REJESTRY ----------------------------------
     
     uint8_t *dma_base_ptr = map_peripheral(DMA_BASE, PAGE_SIZE);
@@ -1055,7 +1076,7 @@ int main()
 
     dma_end();
     printf("DMA stopped\n");
-
+\
     for (i = 0; i < SMPL_TO_COLLECT; i++)
     {
         //printf("DMA %10d: %.32b\n", i, ticks[i]);
@@ -1114,17 +1135,17 @@ int main()
 
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
-        filter_iir(&(mic_data[i][0]), &(mic_mod[i][0]), SMPL_TO_COLLECT);
+        filter_iir(&(mic_data[i][0]), &(mic_mod1[i][0]), SMPL_TO_COLLECT);
     }
-    mic_tmp = mic_data;
-    mic_data = mic_mod;
-    mic_mod = mic_tmp;
-    mic_tmp = 0;
+    //mic_tmp = mic_data;
+    //mic_data = mic_mod;
+    //mic_mod = mic_tmp;
+    //mic_tmp = 0;
 
     
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
-        fwrite(mic_data[i], sizeof(int32_t), SMPL_TO_COLLECT, file_out_filt);
+        fwrite(mic_mod1[i], sizeof(double), SMPL_TO_COLLECT, file_out_filt);
     }
 
     printf("Written data to file output_filt.raw\n");
@@ -1134,6 +1155,23 @@ int main()
 
     printf("cb delay: %d\n", CB_DELAY);
     */
+
+
+    // -------------------------------------- ZDJECIE --------------------------------------
+
+
+    if(fork() == 0)
+    {
+        execl("/usr/bin/rpicam-still",
+        "rpicam-still",
+        "-n", "-v", "0",
+        "--width", "1024",
+        "--height", "1024",
+        "-o", "foto.jpg", NULL);
+
+        printf("Zdjecie nie udane\n");
+        return 0;
+    }
 
 
     // -------------------------------------- HEATMAPA -------------------------------------
@@ -1149,11 +1187,11 @@ int main()
             }
             for(k = 0; k < SMPL_MICS_NUMBER; k++)
             {
-                apply_delay(mic_data[k], mic_mod[k], h, mic_delay[k][i][j] - delay_min + 1, SMPL_TO_COLLECT, FIR_DELAY_LENGTH);
+                apply_delay(mic_mod1[k], mic_mod2[k], h, &(black_win[0]), mic_delay[k][i][j] - delay_min + 1, SMPL_TO_COLLECT, FIR_DELAY_LENGTH);
                 
                 for(l = SMPL_HEATMAP_OFFSET; l < SMPL_TO_COLLECT; l++)
                 {
-                    mic_sum[l - SMPL_HEATMAP_OFFSET] += (double)(mic_mod[k][l]);
+                    mic_sum[l - SMPL_HEATMAP_OFFSET] += (mic_mod2[k][l]);
                 }
             }
             heatmap[i][j] = rms(&(mic_sum[0]), SMPL_TO_COLLECT - SMPL_HEATMAP_OFFSET);
@@ -1175,10 +1213,9 @@ int main()
 
     printf("RESULT: horizontal %.2lf    vertical %.2lf", beam_angle_phi[heat_max_i]/2.0/M_PI*360.0, beam_angle_theta[heat_max_j]/2.0/M_PI*360.0);
 
-    // -------------------------------------- ZDJECIE --------------------------------------
 
-
-   
+    // Oczekuj na zdjecie
+    wait(NULL);
 
 
 
@@ -1188,7 +1225,8 @@ int main()
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         free(mic_data[i]);
-        free(mic_mod[i]);
+        free(mic_mod1[i]);
+        free(mic_mod2[i]);
         for(j = 0; j < RESOLUTION_HOR; j++)
         {
             free(mic_delay[i][j]);
@@ -1200,7 +1238,8 @@ int main()
         free(heatmap[i]);
     }
     free(mic_data);
-    free(mic_mod);
+    free(mic_mod1);
+    free(mic_mod2);
     free(mic_sum);
     free(beam_angle_theta);
     free(beam_angle_phi);
@@ -1228,7 +1267,8 @@ code_error_end:
     for(i = 0; i < SMPL_MICS_NUMBER; i++)
     {
         free(mic_data[i]);
-        free(mic_mod[i]);
+        free(mic_mod1[i]);
+        free(mic_mod2[i]);
         for(j = 0; j < RESOLUTION_HOR; j++)
         {
             free(mic_delay[i][j]);
@@ -1240,7 +1280,8 @@ code_error_end:
         free(heatmap[i]);
     }
     free(mic_data);
-    free(mic_mod);
+    free(mic_mod1);
+    free(mic_mod2);
     free(mic_sum);
     free(beam_angle_theta);
     free(beam_angle_phi);
